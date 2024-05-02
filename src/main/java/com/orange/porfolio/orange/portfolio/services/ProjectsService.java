@@ -4,7 +4,11 @@ import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.ProjectDTO;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
+import com.orange.porfolio.orange.portfolio.entities.User;
+import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
+import com.orange.porfolio.orange.portfolio.exceptions.ForbiddenRuntimeException;
 import com.orange.porfolio.orange.portfolio.repositories.ProjectsRepository;
+import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -18,15 +22,19 @@ public class ProjectsService {
   private ProjectsRepository projectsRepository;
   private TagsService tagsService;
   private ModelMapper mapper;
+  private UsersRepository usersRepository;
 
-  public ProjectsService(ProjectsRepository projectsRepository, TagsService tagsService, ModelMapper mapper) {
+  public ProjectsService(ProjectsRepository projectsRepository, TagsService tagsService, ModelMapper mapper, UsersRepository usersRepository) {
     this.projectsRepository = projectsRepository;
     this.tagsService = tagsService;
     this.mapper = mapper;
+    this.usersRepository = usersRepository;
   }
 
-  public Project create(CreateProjectDTO createProjectDTO){
+  public Project create(UUID userId, CreateProjectDTO createProjectDTO){
+    User user = this.usersRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
     Project project = mapper.map(createProjectDTO, Project.class);
+    project.setAuthor(user);
     List<Tag> tags = this.tagsService.findAll();
 
     for (String tn : createProjectDTO.getTags())
@@ -34,6 +42,7 @@ public class ProjectsService {
         if (t.getTagName().equals(tn))
           project.getTags().add(t);
       }
+    if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
 
     return this.projectsRepository.save(project);
   }
@@ -55,8 +64,10 @@ public class ProjectsService {
     return this.projectsRepository.findAllByAuthorId(id, pageable);
   }
 
-  public ProjectDTO update(UUID id, CreateProjectDTO project) {
+  public ProjectDTO update(UUID userId, UUID id, CreateProjectDTO project) {
     return this.projectsRepository.findById(id).map(p -> {
+      if (!(p.getAuthor().getId().equals(userId)))
+        throw new ForbiddenRuntimeException("Você não tem autorização para atualizar projeto de outro usuário!");
       if(project.getTitle() != null) p.setTitle(project.getTitle());
       if(project.getDescription() != null) p.setDescription(project.getDescription());
       if(project.getUrl() != null) p.setUrl(project.getUrl());
@@ -71,15 +82,21 @@ public class ProjectsService {
               p.getTags().add(t);
           }
       }
+      if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
+
       this.projectsRepository.save(p);
       return mapper.map(p, ProjectDTO.class);
     }).orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado!"));
   }
 
-  public String delete(UUID id) {
-    if(this.projectsRepository.findById(id).isEmpty())
-      throw new EntityNotFoundException("Projeto inexistente!");
+  public String delete(UUID userId, UUID id) {
+    return this.projectsRepository.findById(id).map(p -> {
+      if (!(p.getAuthor().getId().equals(userId)))
+        throw new ForbiddenRuntimeException("Você não tem autorização para deletar projeto de outro usuário!");
+
     this.projectsRepository.deleteById(id);
     return "Projeto deletado com sucesso";
+    }).orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado!"));
+
   }
 }

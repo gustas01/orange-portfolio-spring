@@ -15,13 +15,13 @@ import java.util.UUID;
 @RequestMapping("/users")
 public class UsersController {
   private UsersService usersService;
-  private AuthService authService;
   private TokenService tokenService;
+  private HttpServletRequest request;
 
-  public UsersController(UsersService usersService, AuthService authService, TokenService tokenService) {
+  public UsersController(UsersService usersService, TokenService tokenService, HttpServletRequest request) {
     this.usersService = usersService;
-    this.authService = authService;
     this.tokenService = tokenService;
+    this.request = request;
   }
 
   @GetMapping("/{id}")
@@ -29,13 +29,15 @@ public class UsersController {
     return ResponseEntity.ok(this.usersService.findOne(id));
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<UserDTO> update(@PathVariable UUID id, @RequestBody CreateUserDTO updateUserDTO) {
-    return ResponseEntity.ok(this.usersService.update(id, updateUserDTO));
+  @PutMapping()
+  public ResponseEntity<UserDTO> update(@RequestBody CreateUserDTO updateUserDTO) {
+    String token = this.tokenService.recoverToken(request);
+    UUID userId = UUID.fromString(this.tokenService.validateToken(token));
+    return ResponseEntity.ok(this.usersService.update(userId, updateUserDTO));
   }
 
   @GetMapping("me/data")
-  public ResponseEntity<UserDTO> me(HttpServletRequest request) {
+  public ResponseEntity<UserDTO> me() {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
     return ResponseEntity.ok(this.usersService.findOne(userId));

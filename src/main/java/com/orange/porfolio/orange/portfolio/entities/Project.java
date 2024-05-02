@@ -1,5 +1,6 @@
 package com.orange.porfolio.orange.portfolio.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,6 +37,8 @@ public class Project {
   private LocalDateTime createdAt = LocalDateTime.now();
 
   @ManyToOne
+  @Setter
+  @JsonIgnore
   private User author;
 
   @ManyToMany(cascade = {CascadeType.ALL})

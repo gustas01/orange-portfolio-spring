@@ -3,7 +3,9 @@ package com.orange.porfolio.orange.portfolio.controllers;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.ProjectDTO;
 import com.orange.porfolio.orange.portfolio.entities.Project;
+import com.orange.porfolio.orange.portfolio.security.TokenService;
 import com.orange.porfolio.orange.portfolio.services.ProjectsService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,10 +19,14 @@ import java.util.UUID;
 @RequestMapping("/projects")
 public class ProjectsController {
   private ProjectsService projectsService;
+  private TokenService tokenService;
+  private HttpServletRequest request;
 
 
-  public ProjectsController(ProjectsService projectsService){
+  public ProjectsController(ProjectsService projectsService, TokenService tokenService, HttpServletRequest request){
     this.projectsService = projectsService;
+    this.tokenService = tokenService;
+    this.request = request;
   }
 
   @GetMapping("/discovery")
@@ -40,20 +46,23 @@ public class ProjectsController {
   }
 
   @PostMapping
-  public ResponseEntity<Project> create(@RequestBody CreateProjectDTO createProjectDTO){
-    //TODO: pegar user que está logado no momento para associar à criação do project
-    return new ResponseEntity<>(this.projectsService.create(createProjectDTO),HttpStatus.CREATED);
+  public ResponseEntity<Project> create(@RequestBody CreateProjectDTO createProjectDTO, HttpServletRequest request){
+    String token = this.tokenService.recoverToken(request);
+    UUID userId = UUID.fromString(this.tokenService.validateToken(token));
+    return new ResponseEntity<>(this.projectsService.create(userId, createProjectDTO),HttpStatus.CREATED);
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<ProjectDTO> update(@PathVariable UUID id, @RequestBody CreateProjectDTO updateProjectDTO) {
-    //TODO: pegar user que está logado no momento e verificar se é o dono do projeto pelo ID
-    return ResponseEntity.ok(this.projectsService.update(id, updateProjectDTO));
+    String token = this.tokenService.recoverToken(request);
+    UUID userId = UUID.fromString(this.tokenService.validateToken(token));
+    return ResponseEntity.ok(this.projectsService.update(userId, id, updateProjectDTO));
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<String> delete(@PathVariable UUID id) {
-    //TODO: pegar user que está logado no momento e verificar se é o dono do projeto pelo ID
-    return new ResponseEntity<>(this.projectsService.delete(id), HttpStatus.NO_CONTENT) ;
+    String token = this.tokenService.recoverToken(request);
+    UUID userId = UUID.fromString(this.tokenService.validateToken(token));
+    return new ResponseEntity<>(this.projectsService.delete(userId, id), HttpStatus.NO_CONTENT) ;
   }
 }
