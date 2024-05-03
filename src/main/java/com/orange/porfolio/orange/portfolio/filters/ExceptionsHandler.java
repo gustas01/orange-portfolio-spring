@@ -49,8 +49,10 @@ public class ExceptionsHandler {
     HttpStatus status = HttpStatus.BAD_REQUEST;
 
     List<String> errors = new LinkedList<>();
-    String[] errorsMsg = Objects.requireNonNull(e.getDetailMessageArguments())[1].toString().split(",");
+    String[] errorsMsg = Objects.requireNonNull(e.getDetailMessageArguments())[1].toString().split(", and ");
 
+    for (var a : e.getDetailMessageArguments())
+      System.out.println(a);
     for (String s : errorsMsg)
       errors.add(s.split(": ")[1]);
 

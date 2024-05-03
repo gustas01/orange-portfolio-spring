@@ -12,6 +12,6 @@ public class LoginUserDTO {
   private String email;
 
   @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%¨&*()_{}/^+=])(?=\\S+$).{8,200}$",
-          message = "A senha deve conter no mínimo 8 caracteres; sendo 1 letra maiúscula; 1 minúscula; 1 número e 1 símbolo pelo menos")
+          message = "A senha deve conter no mínimo 8 caracteres, sendo 1 letra maiúscula, 1 minúscula, 1 número e 1 símbolo pelo menos")
   private String password;
 }
