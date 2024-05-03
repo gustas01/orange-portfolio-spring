@@ -13,9 +13,9 @@ public class StandardError {
   private LocalDateTime timestamp;
   private Integer status;
   private String error;
-  private String message;
+  private Object message;
 
-  public StandardError(LocalDateTime timestamp, Integer status, String error, String message) {
+  public StandardError(LocalDateTime timestamp, Integer status, String error, Object message) {
     this.timestamp = timestamp;
     this.status = status;
     this.error = error;

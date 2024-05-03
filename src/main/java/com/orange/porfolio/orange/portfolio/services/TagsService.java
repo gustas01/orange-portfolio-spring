@@ -29,6 +29,7 @@ public class TagsService {
   }
 
   public TagDTO create(CreateTagDTO createTagDTO){
+    if (createTagDTO.getTagName() == null || createTagDTO.getTagName().isEmpty()) throw new BadRequestRuntimeException("Campos obrigatórios estão faltando");
     Tag newTag = mapper.map(createTagDTO, Tag.class);
     return mapper.map(this.tagsRepository.save(newTag), TagDTO.class);
   }

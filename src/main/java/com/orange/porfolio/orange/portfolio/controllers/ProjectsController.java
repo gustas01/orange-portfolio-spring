@@ -6,6 +6,7 @@ import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.security.TokenService;
 import com.orange.porfolio.orange.portfolio.services.ProjectsService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,14 +47,14 @@ public class ProjectsController {
   }
 
   @PostMapping
-  public ResponseEntity<Project> create(@RequestBody CreateProjectDTO createProjectDTO, HttpServletRequest request){
+  public ResponseEntity<Project> create(@RequestBody @Valid CreateProjectDTO createProjectDTO, HttpServletRequest request){
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
     return new ResponseEntity<>(this.projectsService.create(userId, createProjectDTO),HttpStatus.CREATED);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ProjectDTO> update(@PathVariable UUID id, @RequestBody CreateProjectDTO updateProjectDTO) {
+  public ResponseEntity<ProjectDTO> update(@PathVariable UUID id, @RequestBody @Valid CreateProjectDTO updateProjectDTO) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
     return ResponseEntity.ok(this.projectsService.update(userId, id, updateProjectDTO));

@@ -82,7 +82,7 @@ public class ProjectsService {
               p.getTags().add(t);
           }
       }
-      if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
+//      if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
 
       this.projectsRepository.save(p);
       return mapper.map(p, ProjectDTO.class);

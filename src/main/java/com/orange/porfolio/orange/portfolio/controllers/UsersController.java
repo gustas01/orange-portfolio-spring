@@ -6,6 +6,7 @@ import com.orange.porfolio.orange.portfolio.security.TokenService;
 import com.orange.porfolio.orange.portfolio.services.AuthService;
 import com.orange.porfolio.orange.portfolio.services.UsersService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,7 @@ public class UsersController {
   }
 
   @PutMapping()
-  public ResponseEntity<UserDTO> update(@RequestBody CreateUserDTO updateUserDTO) {
+  public ResponseEntity<UserDTO> update(@RequestBody @Valid CreateUserDTO updateUserDTO) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
     return ResponseEntity.ok(this.usersService.update(userId, updateUserDTO));

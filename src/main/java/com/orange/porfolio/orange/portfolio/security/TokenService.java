@@ -39,7 +39,7 @@ public class TokenService {
       return JWT.require(algorithm).withIssuer("api-estudos-fcamara")
               .build().verify(token).getSubject();
     }catch (JWTVerificationException exception){
-      throw new RuntimeException("Erro na validação do token");
+      throw new JWTVerificationException("Usuário não autenticado");
     }
   }
 

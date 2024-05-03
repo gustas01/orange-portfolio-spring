@@ -3,6 +3,7 @@ package com.orange.porfolio.orange.portfolio.services;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
 
+import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
@@ -38,7 +39,7 @@ public class AuthService {
     throw new BadRequestRuntimeException("Usuário ou senha inválidos!");
   }
 
-  public User register(@RequestBody CreateUserDTO createUserDTO) throws BadRequestException {
+  public UserDTO register(@RequestBody CreateUserDTO createUserDTO) throws BadRequestException {
 //    String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%¨&*()_{}/^+=])(?=\\S+$).{8,200}$";
 //    Pattern pattern = Pattern.compile(regex);
 //    Matcher matcher = pattern.matcher(createUserDTO.getPassword());
@@ -53,7 +54,7 @@ public class AuthService {
     User newUser = mapper.map(createUserDTO, User.class);
     newUser.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
     this.usersRepository.save(newUser);
-    return newUser;
+    return mapper.map(newUser, UserDTO.class) ;
   }
 
 

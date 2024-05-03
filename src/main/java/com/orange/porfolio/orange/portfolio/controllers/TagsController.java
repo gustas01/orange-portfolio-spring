@@ -4,6 +4,7 @@ import com.orange.porfolio.orange.portfolio.DTOs.CreateTagDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.TagDTO;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.services.TagsService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class TagsController {
   }
 
   @PostMapping
-  public ResponseEntity<TagDTO> create(@RequestBody CreateTagDTO createTagDTO){
+  public ResponseEntity<TagDTO> create(@RequestBody @Valid CreateTagDTO createTagDTO){
     return ResponseEntity.ok(this.tagsService.create(createTagDTO));
   }
 
@@ -36,7 +37,7 @@ public class TagsController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<String> update(@PathVariable int id,@RequestBody CreateTagDTO updateTagDTO){
+  public ResponseEntity<String> update(@PathVariable int id,@RequestBody @Valid CreateTagDTO updateTagDTO){
     return ResponseEntity.ok(this.tagsService.update(id, updateTagDTO));
   }
 }

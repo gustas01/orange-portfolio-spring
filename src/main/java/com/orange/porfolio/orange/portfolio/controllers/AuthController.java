@@ -2,11 +2,13 @@ package com.orange.porfolio.orange.portfolio.controllers;
 
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.services.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<String> login(@RequestBody LoginUserDTO loginUserDTO, HttpServletResponse response) throws BadRequestException {
+  public ResponseEntity<String> login(@RequestBody @Valid LoginUserDTO loginUserDTO, HttpServletResponse response) throws BadRequestException {
     Cookie cookie = new Cookie("token", authService.login(loginUserDTO));
     cookie.setHttpOnly(true);
     cookie.setPath("/");
@@ -36,8 +38,8 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<User> register(@RequestBody CreateUserDTO userDTO) throws BadRequestException {
-    User user = authService.register(userDTO);
+  public ResponseEntity<UserDTO> register(@RequestBody @Valid CreateUserDTO userDTO) throws BadRequestException {
+    UserDTO user = authService.register(userDTO);
     return new ResponseEntity<>(user, HttpStatus.CREATED);
   }
 }
