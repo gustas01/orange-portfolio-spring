@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Getter
@@ -39,4 +37,7 @@ public class User {
 
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "author")
   private List<Project> projects = new ArrayList<>();
+
+  @ManyToMany
+  private Collection<Role> roles = new HashSet<>();
 }

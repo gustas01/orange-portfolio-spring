@@ -1,12 +1,10 @@
 package com.orange.porfolio.orange.portfolio.filters;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.orange.porfolio.orange.portfolio.DTOs.StandardError;
 import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
 import com.orange.porfolio.orange.portfolio.exceptions.ForbiddenRuntimeException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -59,13 +57,4 @@ public class ExceptionsHandler {
     StandardError err = new StandardError(LocalDateTime.now(), status.value(), error, errors);
     return ResponseEntity.status(status).body(err);
   }
-
-//  @ExceptionHandler(JWTVerificationException.class)
-//  public ResponseEntity<StandardError> JWTVerification(JWTVerificationException e, HttpServletRequest request){
-//    String error = "Bad request";
-//    HttpStatus status = HttpStatus.BAD_REQUEST;
-//
-//    StandardError err = new StandardError(LocalDateTime.now(), status.value(), error, e.getMessage());
-//    return ResponseEntity.status(status).body(err);
-//  }
 }

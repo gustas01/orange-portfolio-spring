@@ -1,31 +1,37 @@
 package com.orange.porfolio.orange.portfolio.security;
 
+import com.orange.porfolio.orange.portfolio.entities.Role;
 import com.orange.porfolio.orange.portfolio.entities.User;
+import com.orange.porfolio.orange.portfolio.exceptions.UnauthorizedRuntimeException;
+import com.orange.porfolio.orange.portfolio.repositories.RoleRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
-import com.orange.porfolio.orange.portfolio.services.UsersService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
-  private TokenService tokenService;
-  private UsersRepository usersRepository;
+  private final TokenService tokenService;
+  private final UsersRepository usersRepository;
+  private final RoleRepository roleRepository;
 
-  public SecurityFilter(TokenService tokenService, UsersRepository usersRepository) {
+  public SecurityFilter(TokenService tokenService, UsersRepository usersRepository, RoleRepository roleRepository) {
     this.tokenService = tokenService;
     this.usersRepository = usersRepository;
+    this.roleRepository = roleRepository;
   }
 
   @Override
@@ -36,17 +42,24 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     String token = this.tokenService.recoverToken(request);
+    if (token == null) throw new UnauthorizedRuntimeException("Usuário não autenticado (filter)");
     String userId = this.tokenService.validateToken(token);
 
     if(userId != null){
       User user = this.usersRepository.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
-      var authorities = Collections.singletonList(new SimpleGrantedAuthority("user"));
-      var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+
+      List<Role> roles = roleRepository.findByUsersId(user.getId());
+
+      List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+      for (Role role : roles) {
+        grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
+      }
+
+      var authentication = new UsernamePasswordAuthenticationToken(user, null, grantedAuthorities);
       SecurityContextHolder.getContext().setAuthentication(authentication);
     }
     filterChain.doFilter(request, response);
 
   }
-
 
 }

@@ -4,8 +4,10 @@ import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
 
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
+import com.orange.porfolio.orange.portfolio.entities.Role;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
+import com.orange.porfolio.orange.portfolio.repositories.RoleRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import com.orange.porfolio.orange.portfolio.security.TokenService;
 import org.apache.coyote.BadRequestException;
@@ -16,20 +18,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Optional;
 
-
-
 @Service
 public class AuthService {
   private UsersRepository usersRepository;
   private ModelMapper mapper;
   private PasswordEncoder passwordEncoder;
   private TokenService tokenService;
+  private RoleRepository roleRepository;
 
-  public AuthService(UsersRepository usersRepository, ModelMapper mapper, PasswordEncoder passwordEncoder, TokenService tokenService) {
+  public AuthService(UsersRepository usersRepository, ModelMapper mapper, PasswordEncoder passwordEncoder,
+                     TokenService tokenService, RoleRepository roleRepository) {
     this.usersRepository = usersRepository;
     this.mapper = mapper;
     this.passwordEncoder = passwordEncoder;
     this.tokenService = tokenService;
+    this.roleRepository = roleRepository;
   }
 
   public String login(@RequestBody LoginUserDTO loginUserDTO) {
@@ -40,18 +43,13 @@ public class AuthService {
   }
 
   public UserDTO register(@RequestBody CreateUserDTO createUserDTO) throws BadRequestException {
-//    String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%¨&*()_{}/^+=])(?=\\S+$).{8,200}$";
-//    Pattern pattern = Pattern.compile(regex);
-//    Matcher matcher = pattern.matcher(createUserDTO.getPassword());
-//
-//    if(!matcher.matches()){
-//      return new ResponseEntity<>("A senha deve conter 1 letra maiúscula, 1 minúscula, 1 número e 1 símbolo pelo menos", HttpStatus.BAD_REQUEST);
-//    }
-
     Optional<User> user = this.usersRepository.findByEmail(createUserDTO.getEmail());
     if (user.isPresent()) throw new BadRequestException("Usuário com esse email já existe!");
 
+    Role role = this.roleRepository.findByName("user");
+
     User newUser = mapper.map(createUserDTO, User.class);
+    newUser.getRoles().add(role);
     newUser.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
     this.usersRepository.save(newUser);
     return mapper.map(newUser, UserDTO.class) ;
