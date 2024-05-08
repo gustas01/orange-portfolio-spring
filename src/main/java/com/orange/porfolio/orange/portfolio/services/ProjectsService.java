@@ -1,7 +1,9 @@
 package com.orange.porfolio.orange.portfolio.services;
 
 import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.ImgurResponse;
 import com.orange.porfolio.orange.portfolio.DTOs.ProjectDTO;
+import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
@@ -14,6 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -23,15 +26,19 @@ public class ProjectsService {
   private TagsService tagsService;
   private ModelMapper mapper;
   private UsersRepository usersRepository;
+  private ImageUploadService imageUploadService;
 
-  public ProjectsService(ProjectsRepository projectsRepository, TagsService tagsService, ModelMapper mapper, UsersRepository usersRepository) {
+  public ProjectsService(ProjectsRepository projectsRepository, TagsService tagsService,
+                         ModelMapper mapper, UsersRepository usersRepository,
+                         ImageUploadService imageUploadService) {
     this.projectsRepository = projectsRepository;
     this.tagsService = tagsService;
     this.mapper = mapper;
     this.usersRepository = usersRepository;
+    this.imageUploadService = imageUploadService;
   }
 
-  public Project create(UUID userId, CreateProjectDTO createProjectDTO){
+  public ProjectDTO create(UUID userId, CreateProjectDTO createProjectDTO, MultipartFile file){
     User user = this.usersRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
     Project project = mapper.map(createProjectDTO, Project.class);
     project.setAuthor(user);
@@ -44,7 +51,10 @@ public class ProjectsService {
       }
     if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
 
-    return this.projectsRepository.save(project);
+    ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
+    project.setThumbnailUrl(imgurResponse.getData().getLink());
+
+    return mapper.map(this.projectsRepository.save(project), ProjectDTO.class);
   }
 
   public Page<Project> discovery(Pageable pageable){;

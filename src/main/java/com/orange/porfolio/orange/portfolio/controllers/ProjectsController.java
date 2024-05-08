@@ -1,7 +1,9 @@
 package com.orange.porfolio.orange.portfolio.controllers;
 
 import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.ImgurResponse;
 import com.orange.porfolio.orange.portfolio.DTOs.ProjectDTO;
+import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.security.TokenService;
 import com.orange.porfolio.orange.portfolio.services.ProjectsService;
@@ -13,7 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RestController
@@ -23,8 +27,8 @@ public class ProjectsController {
   private TokenService tokenService;
   private HttpServletRequest request;
 
-
-  public ProjectsController(ProjectsService projectsService, TokenService tokenService, HttpServletRequest request){
+  public ProjectsController(ProjectsService projectsService, TokenService tokenService,
+                            HttpServletRequest request){
     this.projectsService = projectsService;
     this.tokenService = tokenService;
     this.request = request;
@@ -47,10 +51,12 @@ public class ProjectsController {
   }
 
   @PostMapping
-  public ResponseEntity<Project> create(@RequestBody @Valid CreateProjectDTO createProjectDTO, HttpServletRequest request){
+  public ResponseEntity<ProjectDTO> create(@RequestPart("data") @Valid CreateProjectDTO createProjectDTO,
+                HttpServletRequest request, @RequestPart ("image") MultipartFile file) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
-    return new ResponseEntity<>(this.projectsService.create(userId, createProjectDTO),HttpStatus.CREATED);
+
+    return new ResponseEntity<>(this.projectsService.create(userId, createProjectDTO, file),HttpStatus.CREATED);
   }
 
   @PutMapping("/{id}")

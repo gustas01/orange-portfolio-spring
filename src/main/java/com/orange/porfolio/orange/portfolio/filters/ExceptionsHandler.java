@@ -3,6 +3,7 @@ package com.orange.porfolio.orange.portfolio.filters;
 import com.orange.porfolio.orange.portfolio.DTOs.StandardError;
 import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
 import com.orange.porfolio.orange.portfolio.exceptions.ForbiddenRuntimeException;
+import com.orange.porfolio.orange.portfolio.exceptions.ServiceUnavailableRuntimeException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -55,6 +56,14 @@ public class ExceptionsHandler {
       errors.add(s.split(": ")[1]);
 
     StandardError err = new StandardError(LocalDateTime.now(), status.value(), error, errors);
+    return ResponseEntity.status(status).body(err);
+  }
+
+  @ExceptionHandler(ServiceUnavailableRuntimeException.class)
+  public ResponseEntity<StandardError> serviceUnavailable(ServiceUnavailableRuntimeException e, HttpServletRequest request){
+    String error = "Service Unavailable";
+    HttpStatus status = HttpStatus.SERVICE_UNAVAILABLE;
+    StandardError err = new StandardError(LocalDateTime.now(), status.value(), error, e.getMessage());
     return ResponseEntity.status(status).body(err);
   }
 }
