@@ -12,10 +12,9 @@ import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -42,4 +41,21 @@ public class AuthController {
     UserDTO user = authService.register(userDTO);
     return new ResponseEntity<>(user, HttpStatus.CREATED);
   }
+
+  @GetMapping("/login/google")
+  public ResponseEntity<String> loginGoole(Authentication authentication, HttpServletResponse response){
+    OAuth2AuthenticationToken oAuth2AuthenticationToken = (OAuth2AuthenticationToken) authentication;
+    Cookie cookie = new Cookie("token", authService.loginWithGoogle(oAuth2AuthenticationToken));
+    cookie.setHttpOnly(true);
+    cookie.setPath("/");
+    cookie.setSecure(true);
+    response.addCookie(cookie);
+    return ResponseEntity.ok("Usuário logado com sucesso!");
+  }
+
+//  @GetMapping("/login/callback/google")
+//  public ResponseEntity<String> loginGooleCallback(HttpServletRequest request, HttpServletResponse response){
+//    System.out.println("Na callbackNa callbackNa callbackNa callbackNa callbackNa callbackNa callbackNa callbackNa callback");
+//    return ResponseEntity.ok("Na callback");
+//  }
 }

@@ -40,4 +40,8 @@ public class User {
 
   @ManyToMany
   private Collection<Role> roles = new HashSet<>();
+
+  @Column(nullable = false)
+  @Setter
+  private Boolean google = false;
 }

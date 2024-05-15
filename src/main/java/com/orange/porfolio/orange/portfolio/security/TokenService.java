@@ -24,7 +24,7 @@ public class TokenService {
     try{
       Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
 
-      String token = JWT.create().withIssuer("api-estudos-fcamara")
+      String token = JWT.create().withIssuer("orange-portfolio")
               .withSubject(user.getId()+"").withExpiresAt(generateExpirationDate()).sign(algorithm);
 
       return token;
@@ -36,7 +36,7 @@ public class TokenService {
   public String validateToken(String token){
     try {
       Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
-      return JWT.require(algorithm).withIssuer("api-estudos-fcamara")
+      return JWT.require(algorithm).withIssuer("orange-portfolio")
               .build().verify(token).getSubject();
     }catch (JWTVerificationException exception){
       throw new JWTVerificationException("Usuário não autenticado");

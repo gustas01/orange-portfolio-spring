@@ -13,8 +13,8 @@ import com.orange.porfolio.orange.portfolio.security.TokenService;
 import org.apache.coyote.BadRequestException;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Optional;
 
@@ -35,24 +35,55 @@ public class AuthService {
     this.roleRepository = roleRepository;
   }
 
-  public String login(@RequestBody LoginUserDTO loginUserDTO) {
+  public String login(LoginUserDTO loginUserDTO) {
     Optional<User> user = this.usersRepository.findByEmail(loginUserDTO.getEmail());
     if (user.isPresent() && passwordEncoder.matches(loginUserDTO.getPassword(), user.get().getPassword()))
       return this.tokenService.generateToken(user.get());
     throw new BadRequestRuntimeException("Usuário ou senha inválidos!");
   }
 
-  public UserDTO register(@RequestBody CreateUserDTO createUserDTO) throws BadRequestException {
+  public UserDTO register(CreateUserDTO createUserDTO) {
     Optional<User> user = this.usersRepository.findByEmail(createUserDTO.getEmail());
-    if (user.isPresent()) throw new BadRequestException("Usuário com esse email já existe!");
+    if (user.isPresent()) {
+      if (user.get().getGoogle())
+        throw new BadRequestRuntimeException("Você já usou esse email criando uma conta usando o Google, tente logar dessa forma");
+      throw new BadRequestRuntimeException("Usuário com esse email já existe!");
+    }
 
     Role role = this.roleRepository.findByName("user");
 
     User newUser = mapper.map(createUserDTO, User.class);
     newUser.getRoles().add(role);
+//    newUser.setGoogle(false);
     newUser.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
     this.usersRepository.save(newUser);
     return mapper.map(newUser, UserDTO.class) ;
+  }
+
+  public String loginWithGoogle(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
+    String firstName = oAuth2AuthenticationToken.getPrincipal().getAttribute("given_name");
+    String lastName = oAuth2AuthenticationToken.getPrincipal().getAttribute("family_name");
+    String email = oAuth2AuthenticationToken.getPrincipal().getAttribute("email");
+
+    Optional<User> user = this.usersRepository.findByEmail(email);
+    User newUser = new User();
+
+    if (user.isEmpty()){
+      newUser.setFirstName(firstName);
+      newUser.setLastName(lastName);
+      newUser.setEmail(email);
+      newUser.setPassword("");
+      newUser.setPassword(passwordEncoder.encode(""));
+      newUser.setGoogle(true);
+      this.usersRepository.save(newUser);
+    }else {
+      newUser = mapper.map(user.get(), User.class);
+    }
+
+    Role role = this.roleRepository.findByName("user");
+
+    newUser.getRoles().add(role);
+    return this.tokenService.generateToken(newUser);
   }
 
 
