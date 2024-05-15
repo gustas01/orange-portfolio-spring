@@ -24,6 +24,8 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -57,7 +59,7 @@ public class SecurityConfig {
               .requestMatchers(AntPathRequestMatcher.antMatcher("/auth/login/google")).authenticated()
               .anyRequest().permitAll()
       )
-      .oauth2Login(Customizer.withDefaults());
+      .oauth2Login(oauth2 -> oauth2.failureHandler(authenticationFailureHandler()));
     return http.build();
   }
 
@@ -69,10 +71,8 @@ public class SecurityConfig {
               .authorizeHttpRequests(authorize -> authorize
                       .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                       .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-//                    .requestMatchers(HttpMethod.GET, "/users/me/data").hasAuthority("admin")
                     .requestMatchers(HttpMethod.GET, "/auth/login/google").permitAll()
-//                    .requestMatchers(HttpMethod.GET, "/oauth2/authorization/google").permitAll()
-//                    .requestMatchers(HttpMethod.GET, "/login").permitAll()
+//                    .requestMatchers(HttpMethod.GET, "/users/me/data").hasAuthority("admin")
                       .anyRequest().authenticated()
               )
               .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
@@ -90,27 +90,7 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
-//  private ClientRegistration googleClientRegistration() {
-//    return ClientRegistration.withRegistrationId("google")
-//            .clientId(google_client_id)
-//            .clientSecret(google_client_secret)
-//            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-//            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-//            .redirectUri("http://localhost:8080/login/oauth2/code/google")
-////            .redirectUri("http://localhost:8080/auth/login/google/callback")
-//            .scope("profile", "email")
-////            .authorizationUri("http://localhost:8080")
-//            .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth")
-//            .tokenUri("https://www.googleapis.com/oauth2/v4/token")
-//            .userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo")
-//            .userNameAttributeName(IdTokenClaimNames.SUB)
-//            .jwkSetUri("https://www.googleapis.com/oauth2/v3/certs")
-//            .clientName("Google")
-//            .build();
-//  }
-//
-//  @Bean
-//  public ClientRegistrationRepository clientRegistrationRepository() {
-//    return new InMemoryClientRegistrationRepository(this.googleClientRegistration());
-//  }
+  private AuthenticationFailureHandler authenticationFailureHandler() {
+    return new SimpleUrlAuthenticationFailureHandler("/auth/login/google"); // Redireciona para a rota /login-error
+  }
 }

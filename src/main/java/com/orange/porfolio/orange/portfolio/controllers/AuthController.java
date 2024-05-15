@@ -52,10 +52,4 @@ public class AuthController {
     response.addCookie(cookie);
     return ResponseEntity.ok("Usuário logado com sucesso!");
   }
-
-//  @GetMapping("/login/callback/google")
-//  public ResponseEntity<String> loginGooleCallback(HttpServletRequest request, HttpServletResponse response){
-//    System.out.println("Na callbackNa callbackNa callbackNa callbackNa callbackNa callbackNa callbackNa callbackNa callback");
-//    return ResponseEntity.ok("Na callback");
-//  }
 }
