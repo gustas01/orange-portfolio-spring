@@ -54,7 +54,6 @@ public class AuthService {
 
     User newUser = mapper.map(createUserDTO, User.class);
     newUser.getRoles().add(role);
-//    newUser.setGoogle(false);
     newUser.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
     this.usersRepository.save(newUser);
     return mapper.map(newUser, UserDTO.class) ;

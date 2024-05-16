@@ -1,5 +1,6 @@
 package com.orange.porfolio.orange.portfolio.security;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orange.porfolio.orange.portfolio.entities.Role;
 import com.orange.porfolio.orange.portfolio.entities.User;
@@ -37,18 +38,33 @@ public class SecurityFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-    if(request.getRequestURI().equals("/auth/login")
-      || request.getRequestURI().equals("/auth/register")
-      || request.getRequestURI().equals("/auth/login/google")
-      || request.getRequestURI().equals("/auth/login/google")) {
+    if (request.getRequestURI().equals("/auth/login")
+            || request.getRequestURI().equals("/auth/register")
+            || request.getRequestURI().equals("/auth/login/google")
+            || request.getRequestURI().equals("/auth/login/google")) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    String token = this.tokenService.recoverToken(request);
 
-    //TODO: incluir no if a lógica para quando o token existir mas já tiver expirado
-    if (token == null){
+    try {
+      String token = this.tokenService.recoverToken(request);
+      String userId = this.tokenService.validateToken(token);
+
+      if (userId != null) {
+        User user = this.usersRepository.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
+
+        List<Role> roles = roleRepository.findByUsersId(user.getId());
+
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        for (Role role : roles) {
+          grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
+        }
+
+        var authentication = new UsernamePasswordAuthenticationToken(user, null, grantedAuthorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+      }
+    } catch (JWTVerificationException exception) {
       response.setStatus(HttpStatus.UNAUTHORIZED.value());
       response.setContentType("application/json; charset=UTF-8");
 
@@ -65,21 +81,6 @@ public class SecurityFilter extends OncePerRequestFilter {
       return;
     }
 
-    String userId = this.tokenService.validateToken(token);
-
-    if(userId != null){
-      User user = this.usersRepository.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
-
-      List<Role> roles = roleRepository.findByUsersId(user.getId());
-
-      List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-      for (Role role : roles) {
-        grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
-      }
-
-      var authentication = new UsernamePasswordAuthenticationToken(user, null, grantedAuthorities);
-      SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
     filterChain.doFilter(request, response);
 
   }
