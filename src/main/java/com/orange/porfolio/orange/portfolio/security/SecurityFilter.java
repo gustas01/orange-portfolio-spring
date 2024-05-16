@@ -1,6 +1,5 @@
 package com.orange.porfolio.orange.portfolio.security;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orange.porfolio.orange.portfolio.entities.Role;
 import com.orange.porfolio.orange.portfolio.entities.User;
@@ -64,7 +63,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         var authentication = new UsernamePasswordAuthenticationToken(user, null, grantedAuthorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
-    } catch (JWTVerificationException exception) {
+    } catch (RuntimeException exception) {
       response.setStatus(HttpStatus.UNAUTHORIZED.value());
       response.setContentType("application/json; charset=UTF-8");
 
@@ -74,7 +73,7 @@ public class SecurityFilter extends OncePerRequestFilter {
       res.put("timestamp", LocalDateTime.now().toString());
       res.put("status", HttpStatus.UNAUTHORIZED.value());
       res.put("error", "Unauthorized");
-      res.put("message", "Usuário não autenticado");
+      res.put("message", exception.getMessage());
 
       String json = mapper.writeValueAsString(res);
       response.getWriter().write(json);

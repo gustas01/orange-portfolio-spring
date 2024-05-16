@@ -7,6 +7,7 @@ import com.orange.porfolio.orange.portfolio.services.TagsService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class TagsController {
   }
 
   @PostMapping
+  @PreAuthorize("hasAuthority('admin')")
   public ResponseEntity<TagDTO> create(@RequestBody @Valid CreateTagDTO createTagDTO){
     return ResponseEntity.ok(this.tagsService.create(createTagDTO));
   }
@@ -32,11 +34,13 @@ public class TagsController {
 
 
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasAuthority('admin')")
   public ResponseEntity<String> delete(@PathVariable int id){
     return new ResponseEntity<>(this.tagsService.delete(id), HttpStatus.NO_CONTENT);
   }
 
   @PutMapping("/{id}")
+  @PreAuthorize("hasAuthority('admin')")
   public ResponseEntity<String> update(@PathVariable int id,@RequestBody @Valid CreateTagDTO updateTagDTO){
     return ResponseEntity.ok(this.tagsService.update(id, updateTagDTO));
   }

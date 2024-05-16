@@ -8,6 +8,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -64,6 +65,14 @@ public class ExceptionsHandler {
     String error = "Service Unavailable";
     HttpStatus status = HttpStatus.SERVICE_UNAVAILABLE;
     StandardError err = new StandardError(LocalDateTime.now(), status.value(), error, e.getMessage());
+    return ResponseEntity.status(status).body(err);
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<StandardError> accessDeniedException(AccessDeniedException e, HttpServletRequest request){
+    String error = "Forbidden";
+    HttpStatus status = HttpStatus.FORBIDDEN;
+    StandardError err = new StandardError(LocalDateTime.now(), status.value(), error, "Você não tem permissão para acessar esse serviço, contate um administrador");
     return ResponseEntity.status(status).body(err);
   }
 }

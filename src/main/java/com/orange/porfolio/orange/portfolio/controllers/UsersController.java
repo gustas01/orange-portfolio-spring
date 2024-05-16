@@ -3,7 +3,6 @@ package com.orange.porfolio.orange.portfolio.controllers;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
 import com.orange.porfolio.orange.portfolio.security.TokenService;
-import com.orange.porfolio.orange.portfolio.services.AuthService;
 import com.orange.porfolio.orange.portfolio.services.UsersService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
