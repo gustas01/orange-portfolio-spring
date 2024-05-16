@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import org.hibernate.annotations.Array;
 import org.hibernate.validator.constraints.URL;
 
 import java.util.ArrayList;
@@ -15,11 +14,11 @@ import java.util.List;
 public class CreateProjectDTO {
   @NotNull(message = "Título obrigatório")
   @NotEmpty(message = "Título não pode estar vazio")
-  @Size(max = 30, message = "O título deve ter no máximo 30 caracteres")
+  @Size(max = 30, message = "O título deve ter no máximo {max} caracteres")
   private String title;
 
   @NotNull(message = "Descrição obrigatória")
-  @Size(max = 350, message = "A descrição deve ter no máximo 350 caracteres")
+  @Size(max = 350, message = "A descrição deve ter no máximo {max} caracteres")
   private String description;
 
   @NotNull(message = "Url obrigatória")

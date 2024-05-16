@@ -2,18 +2,17 @@ package com.orange.porfolio.orange.portfolio.DTOs;
 
 import jakarta.validation.constraints.*;
 import lombok.Getter;
-import org.hibernate.validator.constraints.Length;
 
 @Getter
 public class CreateUserDTO {
   @NotNull(message = "O nome é obrigatório")
   @NotEmpty(message = "O nome não pode estar vazio")
-  @Size(max = 30, message = "O nome deve ter no máximo 30 caracteres")
+  @Size(max = 30, message = "O nome deve ter no máximo {max} caracteres")
   private String firstName;
 
   @NotNull(message = "O sobrenome é obrigatório")
   @NotEmpty(message = "O sobrenome não pode estar vazio")
-  @Size(max = 30, message = "O sobrenome deve ter no máximo 30 caracteres")
+  @Size(max = 30, message = "O sobrenome deve ter no máximo {max} caracteres")
   private String lastName;
 
   @Email(message = "Email inválido")

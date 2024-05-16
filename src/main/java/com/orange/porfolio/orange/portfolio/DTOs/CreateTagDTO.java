@@ -9,6 +9,6 @@ import lombok.Getter;
 public class CreateTagDTO {
   @NotNull(message = "O nome da Tag é obrigatório")
   @NotEmpty(message = "O nome da Tag não pode estar vazio")
-  @Size(max = 20, message = "O nome da Tag deve ter no máximo 20 caracteres")
+  @Size(max = 20, message = "O nome da Tag deve ter no máximo {max} caracteres")
   private String tagName;
 }
