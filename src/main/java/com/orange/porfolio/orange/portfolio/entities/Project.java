@@ -41,6 +41,6 @@ public class Project {
   @JsonIgnore
   private User author;
 
-  @ManyToMany(cascade = {CascadeType.ALL})
+  @ManyToMany
   private Set<Tag> tags = new HashSet<>();
 }

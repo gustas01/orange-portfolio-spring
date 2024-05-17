@@ -21,7 +21,7 @@ public class Tag {
   @Setter
   private String tagName;
 
-  @ManyToMany(cascade = {CascadeType.ALL}, mappedBy = "tags")
+  @ManyToMany(mappedBy = "tags")
   @JsonIgnore
   private List<Project> projects = new ArrayList<>();
 
