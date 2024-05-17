@@ -7,12 +7,10 @@ import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeExceptio
 import com.orange.porfolio.orange.portfolio.repositories.TagsRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TagsService {
@@ -29,7 +27,9 @@ public class TagsService {
   }
 
   public TagDTO create(CreateTagDTO createTagDTO){
-    if (createTagDTO.getTagName() == null || createTagDTO.getTagName().isEmpty()) throw new BadRequestRuntimeException("Campos obrigatórios estão faltando");
+    Optional<Tag> tag = this.tagsRepository.findOneByTagName(createTagDTO.getTagName());
+    if (tag.isPresent())
+      throw new BadRequestRuntimeException("Tag já existe!");
     Tag newTag = mapper.map(createTagDTO, Tag.class);
     return mapper.map(this.tagsRepository.save(newTag), TagDTO.class);
   }
