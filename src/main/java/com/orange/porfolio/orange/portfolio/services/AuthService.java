@@ -19,6 +19,8 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,6 +31,7 @@ public class AuthService {
   private final TokenService tokenService;
   private final RoleRepository roleRepository;
   private final ImageUploadService imageUploadService;
+  private final List<String> allowedMimeTypes = Arrays.asList("image/jpeg", "image/png");
 
   public AuthService(UsersRepository usersRepository, ModelMapper mapper, PasswordEncoder passwordEncoder,
                      TokenService tokenService, RoleRepository roleRepository,
@@ -63,6 +66,8 @@ public class AuthService {
     newUser.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
 
     if(file != null){
+      if (!allowedMimeTypes.contains(file.getContentType()))
+        throw new BadRequestRuntimeException("Tipo de arquivo não suportado. User arquivos .JPG ou .PNG");
       ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
       newUser.setAvatarUrl(imgurResponse.getData().getLink());
     }

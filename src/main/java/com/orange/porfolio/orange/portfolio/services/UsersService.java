@@ -6,6 +6,7 @@ import com.orange.porfolio.orange.portfolio.DTOs.UpdateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
 import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
 import com.orange.porfolio.orange.portfolio.entities.User;
+import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
@@ -14,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +26,7 @@ public class UsersService {
   private final ModelMapper mapper;
   private final PasswordEncoder passwordEncoder;
   private final ImageUploadService imageUploadService;
+  private final List<String> allowedMimeTypes = Arrays.asList("image/jpeg", "image/png");
 
   public UsersService(UsersRepository usersRepository, ModelMapper mapper, @Lazy PasswordEncoder passwordEncoder,
                       ImageUploadService imageUploadService) {
@@ -56,6 +60,8 @@ public class UsersService {
     if (updateUserDTO.getPassword() != null) user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
 
     if(file != null){
+      if (!allowedMimeTypes.contains(file.getContentType()))
+        throw new BadRequestRuntimeException("Tipo de arquivo não suportado. User arquivos .JPG ou .PNG");
       ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
       user.setAvatarUrl(imgurResponse.getData().getLink());
     }

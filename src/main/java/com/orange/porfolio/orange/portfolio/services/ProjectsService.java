@@ -28,6 +28,7 @@ public class ProjectsService {
   private final ModelMapper mapper;
   private final UsersRepository usersRepository;
   private final ImageUploadService imageUploadService;
+  private final List<String> allowedMimeTypes = Arrays.asList("image/jpeg", "image/png");
 
   public ProjectsService(ProjectsRepository projectsRepository, TagsService tagsService,
                          ModelMapper mapper, UsersRepository usersRepository,
@@ -53,6 +54,8 @@ public class ProjectsService {
     if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
 
     if(file != null){
+      if (!allowedMimeTypes.contains(file.getContentType()))
+        throw new BadRequestRuntimeException("Tipo de arquivo não suportado. User arquivos .JPG ou .PNG");
       ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
       project.setThumbnailUrl(imgurResponse.getData().getLink());
     }
@@ -97,6 +100,8 @@ public class ProjectsService {
       }
 //      if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
       if(file != null){
+        if (!allowedMimeTypes.contains(file.getContentType()))
+          throw new BadRequestRuntimeException("Tipo de arquivo não suportado. User arquivos .JPG ou .PNG");
         ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
         p.setThumbnailUrl(imgurResponse.getData().getLink());
       }
