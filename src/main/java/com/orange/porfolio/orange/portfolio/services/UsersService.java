@@ -1,7 +1,10 @@
 package com.orange.porfolio.orange.portfolio.services;
 
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.ImgurResponse;
+import com.orange.porfolio.orange.portfolio.DTOs.UpdateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
+import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -9,20 +12,24 @@ import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class UsersService {
-  private UsersRepository usersRepository;
-  private ModelMapper mapper;
-  private PasswordEncoder passwordEncoder;
+  private final UsersRepository usersRepository;
+  private final ModelMapper mapper;
+  private final PasswordEncoder passwordEncoder;
+  private final ImageUploadService imageUploadService;
 
-  public UsersService(UsersRepository usersRepository, ModelMapper mapper, @Lazy PasswordEncoder passwordEncoder) {
+  public UsersService(UsersRepository usersRepository, ModelMapper mapper, @Lazy PasswordEncoder passwordEncoder,
+                      ImageUploadService imageUploadService) {
     this.usersRepository = usersRepository;
     this.mapper = mapper;
     this.passwordEncoder = passwordEncoder;
+    this.imageUploadService = imageUploadService;
   }
 
   public UserDTO findOne(UUID id) {
@@ -39,7 +46,7 @@ public class UsersService {
     return user.get();
   }
 
-  public UserDTO update(UUID id, CreateUserDTO updateUserDTO){
+  public UserDTO update(UUID id, UpdateUserDTO updateUserDTO, MultipartFile file){
     User user = this.usersRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
 
@@ -47,6 +54,11 @@ public class UsersService {
     if (updateUserDTO.getFirstName() != null) user.setFirstName(updateUserDTO.getFirstName());
     if (updateUserDTO.getLastName() != null) user.setLastName(updateUserDTO.getLastName());
     if (updateUserDTO.getPassword() != null) user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
+
+    if(file != null){
+      ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
+      user.setAvatarUrl(imgurResponse.getData().getLink());
+    }
 
     this.usersRepository.save(user);
     return mapper.map(user, UserDTO.class);

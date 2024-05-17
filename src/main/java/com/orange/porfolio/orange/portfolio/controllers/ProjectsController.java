@@ -1,9 +1,8 @@
 package com.orange.porfolio.orange.portfolio.controllers;
 
 import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
-import com.orange.porfolio.orange.portfolio.DTOs.ImgurResponse;
 import com.orange.porfolio.orange.portfolio.DTOs.ProjectDTO;
-import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
+import com.orange.porfolio.orange.portfolio.DTOs.UpdateProjectDTO;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.security.TokenService;
 import com.orange.porfolio.orange.portfolio.services.ProjectsService;
@@ -16,16 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/projects")
 public class ProjectsController {
-  private ProjectsService projectsService;
-  private TokenService tokenService;
-  private HttpServletRequest request;
+  private final ProjectsService projectsService;
+  private final TokenService tokenService;
+  private final HttpServletRequest request;
 
   public ProjectsController(ProjectsService projectsService, TokenService tokenService,
                             HttpServletRequest request){
@@ -52,7 +49,7 @@ public class ProjectsController {
 
   @PostMapping
   public ResponseEntity<ProjectDTO> create(@RequestPart("data") @Valid CreateProjectDTO createProjectDTO,
-                HttpServletRequest request, @RequestPart ("image") MultipartFile file) {
+                                           @RequestPart (value = "image", required = false) MultipartFile file) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
 
@@ -60,10 +57,11 @@ public class ProjectsController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ProjectDTO> update(@PathVariable UUID id, @RequestBody @Valid CreateProjectDTO updateProjectDTO) {
+  public ResponseEntity<ProjectDTO> update(@PathVariable UUID id, @RequestPart("data") @Valid UpdateProjectDTO updateProjectDTO,
+                                           @RequestPart (value = "image", required = false) MultipartFile file) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
-    return ResponseEntity.ok(this.projectsService.update(userId, id, updateProjectDTO));
+    return ResponseEntity.ok(this.projectsService.update(userId, id, updateProjectDTO, file));
   }
 
   @DeleteMapping("/{id}")

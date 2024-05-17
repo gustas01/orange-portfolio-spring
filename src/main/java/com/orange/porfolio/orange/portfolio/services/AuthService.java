@@ -1,9 +1,11 @@
 package com.orange.porfolio.orange.portfolio.services;
 
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.ImgurResponse;
 import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
 
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
+import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
 import com.orange.porfolio.orange.portfolio.entities.Role;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
@@ -15,24 +17,28 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
 @Service
 public class AuthService {
-  private UsersRepository usersRepository;
-  private ModelMapper mapper;
-  private PasswordEncoder passwordEncoder;
-  private TokenService tokenService;
-  private RoleRepository roleRepository;
+  private final UsersRepository usersRepository;
+  private final ModelMapper mapper;
+  private final PasswordEncoder passwordEncoder;
+  private final TokenService tokenService;
+  private final RoleRepository roleRepository;
+  private final ImageUploadService imageUploadService;
 
   public AuthService(UsersRepository usersRepository, ModelMapper mapper, PasswordEncoder passwordEncoder,
-                     TokenService tokenService, RoleRepository roleRepository) {
+                     TokenService tokenService, RoleRepository roleRepository,
+                     ImageUploadService imageUploadService) {
     this.usersRepository = usersRepository;
     this.mapper = mapper;
     this.passwordEncoder = passwordEncoder;
     this.tokenService = tokenService;
     this.roleRepository = roleRepository;
+    this.imageUploadService = imageUploadService;
   }
 
   public String login(LoginUserDTO loginUserDTO) {
@@ -42,7 +48,7 @@ public class AuthService {
     throw new BadRequestRuntimeException("Usuário ou senha inválidos!");
   }
 
-  public UserDTO register(CreateUserDTO createUserDTO) {
+  public UserDTO register(CreateUserDTO createUserDTO, MultipartFile file) {
     Optional<User> user = this.usersRepository.findByEmail(createUserDTO.getEmail());
     if (user.isPresent()) {
       if (user.get().getGoogle())
@@ -55,6 +61,12 @@ public class AuthService {
     User newUser = mapper.map(createUserDTO, User.class);
     newUser.getRoles().add(role);
     newUser.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
+
+    if(file != null){
+      ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
+      newUser.setAvatarUrl(imgurResponse.getData().getLink());
+    }
+
     this.usersRepository.save(newUser);
     return mapper.map(newUser, UserDTO.class) ;
   }

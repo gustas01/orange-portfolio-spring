@@ -45,7 +45,8 @@ public class SecurityFilter extends OncePerRequestFilter {
       return;
     }
 
-
+    //usando try/catch aqui porque o @ControllerAdvice não cobre aqui, pois aqui não passa por controller, e
+    //uma exceção pode ser lançada na hora de validar o token
     try {
       String token = this.tokenService.recoverToken(request);
       String userId = this.tokenService.validateToken(token);

@@ -3,6 +3,7 @@ package com.orange.porfolio.orange.portfolio.services;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.ImgurResponse;
 import com.orange.porfolio.orange.portfolio.DTOs.ProjectDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.UpdateProjectDTO;
 import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
@@ -22,11 +23,11 @@ import java.util.*;
 
 @Service
 public class ProjectsService {
-  private ProjectsRepository projectsRepository;
-  private TagsService tagsService;
-  private ModelMapper mapper;
-  private UsersRepository usersRepository;
-  private ImageUploadService imageUploadService;
+  private final ProjectsRepository projectsRepository;
+  private final TagsService tagsService;
+  private final ModelMapper mapper;
+  private final UsersRepository usersRepository;
+  private final ImageUploadService imageUploadService;
 
   public ProjectsService(ProjectsRepository projectsRepository, TagsService tagsService,
                          ModelMapper mapper, UsersRepository usersRepository,
@@ -51,8 +52,10 @@ public class ProjectsService {
       }
     if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
 
-    ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
-    project.setThumbnailUrl(imgurResponse.getData().getLink());
+    if(file != null){
+      ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
+      project.setThumbnailUrl(imgurResponse.getData().getLink());
+    }
 
     return mapper.map(this.projectsRepository.save(project), ProjectDTO.class);
   }
@@ -74,7 +77,7 @@ public class ProjectsService {
     return this.projectsRepository.findAllByAuthorId(id, pageable);
   }
 
-  public ProjectDTO update(UUID userId, UUID id, CreateProjectDTO project) {
+  public ProjectDTO update(UUID userId, UUID id, UpdateProjectDTO project, MultipartFile file) {
     return this.projectsRepository.findById(id).map(p -> {
       if (!(p.getAuthor().getId().equals(userId)))
         throw new ForbiddenRuntimeException("Você não tem autorização para atualizar projeto de outro usuário!");
@@ -93,6 +96,10 @@ public class ProjectsService {
           }
       }
 //      if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
+      if(file != null){
+        ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
+        p.setThumbnailUrl(imgurResponse.getData().getLink());
+      }
 
       this.projectsRepository.save(p);
       return mapper.map(p, ProjectDTO.class);
