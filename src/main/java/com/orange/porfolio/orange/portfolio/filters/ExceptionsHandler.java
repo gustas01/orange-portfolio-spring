@@ -6,18 +6,22 @@ import com.orange.porfolio.orange.portfolio.exceptions.ForbiddenRuntimeException
 import com.orange.porfolio.orange.portfolio.exceptions.ServiceUnavailableRuntimeException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 @ControllerAdvice
 public class ExceptionsHandler {
+  @Value("${spring.servlet.multipart.max-file-size}")
+  String maxImageUploadSize;
 
   @ExceptionHandler(EntityNotFoundException.class)
   public ResponseEntity<StandardError> resourceNotFound(EntityNotFoundException e, HttpServletRequest request){
@@ -73,6 +77,14 @@ public class ExceptionsHandler {
     String error = "Forbidden";
     HttpStatus status = HttpStatus.FORBIDDEN;
     StandardError err = new StandardError(LocalDateTime.now(), status.value(), error, "Você não tem permissão para acessar esse serviço, contate um administrador");
+    return ResponseEntity.status(status).body(err);
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public ResponseEntity<StandardError> maxUploadSizeExceededException(MaxUploadSizeExceededException e, HttpServletRequest request){
+    String error = "Payload Too Large";
+    HttpStatus status = HttpStatus.PAYLOAD_TOO_LARGE;
+    StandardError err = new StandardError(LocalDateTime.now(), status.value(), error, "Imagem muito grande, tamanho máximo: "+ maxImageUploadSize);
     return ResponseEntity.status(status).body(err);
   }
 }
