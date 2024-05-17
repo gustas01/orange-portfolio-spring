@@ -23,7 +23,7 @@ public class TagsService {
   }
 
   public List<Tag> findAll(){
-    return this.tagsRepository.findAll();
+    return this.tagsRepository.findAllByActive(true);
   }
 
   public TagDTO create(CreateTagDTO createTagDTO){
@@ -36,7 +36,8 @@ public class TagsService {
 
   public String delete(int id){
     Tag tag = this.tagsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Tag inexistente"));
-    this.tagsRepository.delete(tag);
+    tag.setActive(false);
+    this.tagsRepository.save(tag);
     return "Tag deletada com sucesso";
   }
 

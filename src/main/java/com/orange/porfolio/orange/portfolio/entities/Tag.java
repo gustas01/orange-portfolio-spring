@@ -25,6 +25,10 @@ public class Tag {
   @JsonIgnore
   private List<Project> projects = new ArrayList<>();
 
+  @Setter
+  @JsonIgnore
+  private Boolean active = true;
+
   public Tag(String tagName) {
     this.tagName = tagName;
   }
