@@ -40,7 +40,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     if (request.getRequestURI().equals("/auth/login")
             || request.getRequestURI().equals("/auth/register")
             || request.getRequestURI().equals("/auth/login/google")
-            || request.getRequestURI().equals("/auth/login/google")) {
+            || request.getRequestURI().equals("/swagger-ui.html**")) {
       filterChain.doFilter(request, response);
       return;
     }

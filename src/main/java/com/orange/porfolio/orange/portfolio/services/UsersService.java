@@ -61,7 +61,7 @@ public class UsersService {
 
     if(file != null){
       if (!allowedMimeTypes.contains(file.getContentType()))
-        throw new BadRequestRuntimeException("Tipo de arquivo não suportado. User arquivos .JPG ou .PNG");
+        throw new BadRequestRuntimeException("Tipo de arquivo não suportado. Use arquivos .JPG ou .PNG");
       ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
       user.setAvatarUrl(imgurResponse.getData().getLink());
     }
