@@ -76,7 +76,7 @@ public class ProjectsService {
   }
 
   //chamar lá no userController
-  public Page<ProjectDTO> findAllByAuthor(UUID id, Pageable pageable){
+  public Page<Project> findAllByAuthor(UUID id, Pageable pageable){
     return this.projectsRepository.findAllByAuthorId(id, pageable);
   }
 

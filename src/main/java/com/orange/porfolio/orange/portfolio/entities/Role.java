@@ -13,6 +13,7 @@ import java.util.HashSet;
 @NoArgsConstructor
 public class Role {
   @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
   @Column(unique = true, nullable = false, length = 30)

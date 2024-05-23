@@ -1,9 +1,11 @@
 package com.orange.porfolio.orange.portfolio.DTOs;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class CreateUserDTO {
   @NotNull(message = "O nome é obrigatório")
   @NotEmpty(message = "O nome não pode estar vazio")
