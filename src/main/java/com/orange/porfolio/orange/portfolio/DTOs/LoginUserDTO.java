@@ -3,9 +3,11 @@ package com.orange.porfolio.orange.portfolio.DTOs;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class LoginUserDTO {
   @NotNull(message = "Email obrigatório!")
   @Email(message = "Email inválido!")

@@ -31,6 +31,7 @@ public class AuthService {
   private final TokenService tokenService;
   private final RoleRepository roleRepository;
   private final ImageUploadService imageUploadService;
+
   private final List<String> allowedMimeTypes = Arrays.asList("image/jpeg", "image/png");
 
   public AuthService(UsersRepository usersRepository, ModelMapper mapper, PasswordEncoder passwordEncoder,
@@ -88,7 +89,6 @@ public class AuthService {
       newUser.setFirstName(firstName);
       newUser.setLastName(lastName);
       newUser.setEmail(email);
-      newUser.setPassword("");
       newUser.setPassword(passwordEncoder.encode(""));
       newUser.setGoogle(true);
       this.usersRepository.save(newUser);
