@@ -19,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class AuthServiceTest {
   @Mock
@@ -53,15 +53,18 @@ class AuthServiceTest {
   @Test
   @DisplayName("Should return a jwt token")
   void loginCase1() {
-    LoginUserDTO mockUserDTO = TestUtilsMocks.mockLoginUserDTO;
+    LoginUserDTO mockLoginUserDTO = TestUtilsMocks.mockLoginUserDTO;
     User mockUser = TestUtilsMocks.mockUser;
     String mockToken = TestUtilsMocks.mockToken;
 
-    when(usersRepository.findByEmail(mockUserDTO.getEmail())).thenReturn(Optional.of(mockUser));
+    when(usersRepository.findByEmail(mockLoginUserDTO.getEmail())).thenReturn(Optional.of(mockUser));
     when(tokenService.generateToken(mockUser)).thenReturn(mockToken);
-    when(passwordEncoder.matches(mockUserDTO.getPassword(), mockUser.getPassword())).thenReturn(true);
-    String token = this.authService.login(mockUserDTO);
+    when(passwordEncoder.matches(mockLoginUserDTO.getPassword(), mockUser.getPassword())).thenReturn(true);
+    String token = this.authService.login(mockLoginUserDTO);
 
+    verify(usersRepository, times(1)).findByEmail(mockLoginUserDTO.getEmail());
+    verify(tokenService, times(1)).generateToken(mockUser);
+    verify(passwordEncoder, times(1)).matches(mockLoginUserDTO.getPassword(), mockUser.getPassword());
     assertEquals(mockToken, token);
   }
 
@@ -76,7 +79,13 @@ class AuthServiceTest {
     when(tokenService.generateToken(mockUser)).thenReturn(mockToken);
     when(passwordEncoder.matches(mockLoginUserDTO.getPassword(), mockUser.getPassword())).thenReturn(false);
 
-    assertThrowsExactly(BadRequestRuntimeException.class, () -> authService.login(mockLoginUserDTO));
+
+    Exception exception = assertThrowsExactly(BadRequestRuntimeException.class, () -> authService.login(mockLoginUserDTO));
+
+    assertEquals(exception.getMessage(), "Usuário ou senha inválidos!");
+
+    verify(usersRepository, times(1)).findByEmail(mockLoginUserDTO.getEmail());
+    verify(passwordEncoder, times(1)).matches(mockLoginUserDTO.getPassword(), mockUser.getPassword());
   }
 
   @Test
