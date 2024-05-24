@@ -2,6 +2,8 @@ package com.orange.porfolio.orange.portfolio.repositories;
 
 import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
+import com.orange.porfolio.orange.portfolio.TestUtilsMocks;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Role;
 import com.orange.porfolio.orange.portfolio.entities.User;
@@ -39,41 +41,40 @@ class ProjectsRepositoryTest {
   @Test
   @DisplayName("should get a page of projects successfully from DB")
   void findAllByAuthorIdSuccess() {
+    User mockUser = TestUtilsMocks.mockUser;
+    CreateProjectDTO mockCreateProjectDTO = TestUtilsMocks.mockCreateProjectDTO;
 
 
-    CreateProjectDTO projectDTO = new CreateProjectDTO("um título", "uma descrição", "http://www.umaurl.com.br");
-
-    Project persistedProject = this.createProject(projectDTO);
+    Project persistedProject = this.createProject(mockCreateProjectDTO);
     Pageable pageable = PageRequest.of(0, 10);
 
     Page<Project> projectDTOS = this.projectsRepository
                     .findAllByAuthorId(persistedProject.getAuthor().getId(), pageable);
 
     assertNotNull(projectDTOS);
-    assertEquals(projectDTOS.getContent().getFirst().getTitle(), "um título");
-    assertEquals(projectDTOS.getContent().getFirst().getDescription(), "uma descrição");
-    assertEquals(projectDTOS.getContent().getFirst().getUrl(), "http://www.umaurl.com.br");
-    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getFirstName(), "gustavo");
-    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getLastName(), "lima");
-    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getEmail(), "gustavo@email.com");
+    assertEquals(projectDTOS.getContent().getFirst().getTitle(), mockCreateProjectDTO.getTitle());
+    assertEquals(projectDTOS.getContent().getFirst().getDescription(), mockCreateProjectDTO.getDescription());
+    assertEquals(projectDTOS.getContent().getFirst().getUrl(), mockCreateProjectDTO.getUrl());
+    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getFirstName(), mockUser.getFirstName());
+    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getLastName(), mockUser.getLastName());
+    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getEmail(), mockUser.getEmail());
 
     //usando assertJ
 //    assertThat(projectDTOS).isNotNull();
-//    assertThat(projectDTOS.getContent().getFirst().getTitle()).isEqualTo("um título");
-//    assertThat(projectDTOS.getContent().getFirst().getDescription()).isEqualTo("uma descrição");
-//    assertThat(projectDTOS.getContent().getFirst().getUrl()).isEqualTo("http://www.umaurl.com.br");
-//    assertThat(projectDTOS.getContent().getFirst().getAuthor().getFirstName()).isEqualTo("gustavo");
-//    assertThat(projectDTOS.getContent().getFirst().getAuthor().getLastName()).isEqualTo("lima");
-//    assertThat(projectDTOS.getContent().getFirst().getAuthor().getEmail()).isEqualTo("gustavo@email.com");
+//    assertThat(projectDTOS.getContent().getFirst().getTitle()).isEqualTo(mockCreateProjectDTO.getTitle());
+//    assertThat(projectDTOS.getContent().getFirst().getDescription()).isEqualTo(mockCreateProjectDTO.getDescription());
+//    assertThat(projectDTOS.getContent().getFirst().getUrl()).isEqualTo(mockCreateProjectDTO.getUrl());
+//    assertThat(projectDTOS.getContent().getFirst().getAuthor().getFirstName()).isEqualTo(mockUser.getFirstName());
+//    assertThat(projectDTOS.getContent().getFirst().getAuthor().getLastName()).isEqualTo(mockUser.getLastName());
+//    assertThat(projectDTOS.getContent().getFirst().getAuthor().getEmail()).isEqualTo(mockUser.getEmail());
   }
 
   @Test
   @DisplayName("should NOT get a page of projects successfully from DB")
   void findAllByAuthorIdFail() {
+    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
 
-    CreateUserDTO userDTO = new CreateUserDTO(
-            "gustavo", "lima", "gustavo@email.com", "12345678Aa!");
-      User persistedUser = this.createUser(userDTO);
+    User persistedUser = this.createUser(mockCreateUserDTO);
 
     Pageable pageable = PageRequest.of(0, 10);
 
@@ -89,9 +90,8 @@ class ProjectsRepositoryTest {
   }
 
   private Project createProject(CreateProjectDTO data){
-    CreateUserDTO userDTO = new CreateUserDTO(
-            "gustavo", "lima", "gustavo@email.com", "12345678Aa!");
-    User persistedUser = this.createUser(userDTO);
+    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
+    User persistedUser = this.createUser(mockCreateUserDTO);
     Project newProject = mapper.map(data, Project.class);
     newProject.setAuthor(persistedUser);
     entityManager.persist(newProject);
