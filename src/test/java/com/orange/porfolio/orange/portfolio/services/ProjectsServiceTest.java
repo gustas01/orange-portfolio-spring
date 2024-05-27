@@ -20,6 +20,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
@@ -172,7 +176,22 @@ class ProjectsServiceTest {
   }
 
   @Test
+  @DisplayName("Should return a paginated list of projects")
   void discovery() {
+    User mockUser = mocksObjects.mockUser;
+    Project mockProject = mocksObjects.mockProject;
+
+    Pageable pageable = PageRequest.of(0, 10);
+
+    when(projectsRepository.findAllByAuthorIdNot(mockUser.getId(), pageable)).thenReturn(new PageImpl<>(List.of(mockProject), pageable, 1));
+    Page<Project> projects = projectsService.discovery(mockUser.getId(), pageable);
+
+    assertNotNull(projects);
+    assertNotNull(projects.getContent());
+    assertEquals(projects.getNumberOfElements(), 1);
+
+    verify(projectsRepository, times(1)).findAllByAuthorIdNot(mockUser.getId(), pageable);
+    assertEquals(projects.getContent(), List.of(mockProject) );
   }
 
   @Test
