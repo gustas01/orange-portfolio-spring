@@ -11,6 +11,7 @@ import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
 import com.orange.porfolio.orange.portfolio.repositories.ProjectsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -142,6 +143,29 @@ class ProjectsServiceTest {
     verify(usersRepository, times(1)).findById(mockUser.getId());
     verify(mapper, times(1)).map(mockCreateProjectDTO, Project.class);
     verify(tagsService, times(1)).findAll();
+    verify(imageUploadService, times(0)).uploadImage(mockMultipartFileImage);
+    verify(mapper, times(0)).map(mockProjectDTOWithoutTag, ProjectDTO.class);
+    verify(projectsRepository, times(0)).save(mockProjectDTOWithoutTag);
+  }
+
+
+  @Test
+  @DisplayName("Should try create a project with an INVALID user and throw and exception")
+  void createProjectWithInvalidToken() {
+    User mockUser = mocksObjects.mockUser;
+    CreateProjectDTO mockCreateProjectDTO = mocksObjects.mockCreateProjectDTO;
+    Project mockProjectDTOWithoutTag = mocksObjects.mockProjectWithoutTag;
+    MockMultipartFile mockMultipartFileImage = mocksObjects.mockMultipartFileImage;
+
+    when(usersRepository.findById(mockUser.getId())).thenReturn(Optional.empty());
+
+    Exception exception = assertThrowsExactly(EntityNotFoundException.class, () -> projectsService.create(mockUser.getId(), mockCreateProjectDTO, null));
+
+    assertEquals(exception.getMessage(), "Usuário não encontrado!");
+
+    verify(usersRepository, times(1)).findById(mockUser.getId());
+    verify(mapper, times(0)).map(mockCreateProjectDTO, Project.class);
+    verify(tagsService, times(0)).findAll();
     verify(imageUploadService, times(0)).uploadImage(mockMultipartFileImage);
     verify(mapper, times(0)).map(mockProjectDTOWithoutTag, ProjectDTO.class);
     verify(projectsRepository, times(0)).save(mockProjectDTOWithoutTag);
