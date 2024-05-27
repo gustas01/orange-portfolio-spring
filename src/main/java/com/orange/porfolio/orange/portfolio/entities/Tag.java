@@ -2,6 +2,7 @@ package com.orange.porfolio.orange.portfolio.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Tag {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
