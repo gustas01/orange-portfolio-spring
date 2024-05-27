@@ -25,4 +25,6 @@ public class TestUtilsMocks {
   public List<Tag> mockTags = List.of(mockTag);
   public Project mockProject = new Project(UUID.fromString("c9d7c521-5e4c-4e2a-b604-dac3d11bb5c0"), "Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br", "", LocalDateTime.now(), mockUser, Set.of(mockTag));
   public ProjectDTO mockProjectDTO = new ProjectDTO(UUID.fromString("c9d7c521-5e4c-4e2a-b604-dac3d11bb5c0"), "Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br", "", LocalDateTime.now(), Set.of(mockTag));
+  public Project mockProjectWithoutTag = new Project(UUID.fromString("c9d7c521-5e4c-4e2a-b604-dac3d11bb5c0"), "Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br", "", LocalDateTime.now(), mockUser, new HashSet<>());
+  public ProjectDTO mockProjectDTOWithoutTag = new ProjectDTO(UUID.fromString("c9d7c521-5e4c-4e2a-b604-dac3d11bb5c0"), "Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br", "", LocalDateTime.now(),  new HashSet<>());
 }

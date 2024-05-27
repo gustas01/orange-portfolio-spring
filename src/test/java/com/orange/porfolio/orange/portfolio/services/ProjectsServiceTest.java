@@ -8,6 +8,7 @@ import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
+import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
 import com.orange.porfolio.orange.portfolio.repositories.ProjectsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -115,6 +116,35 @@ class ProjectsServiceTest {
     verify(tagsService, times(1)).findAll();
     verify(mapper, times(1)).map(mockProject, ProjectDTO.class);
     verify(projectsRepository, times(1)).save(mockProject);
+  }
+
+
+  @Test
+  @DisplayName("Should try create a project WITHOUT tag and throw and exception")
+  void createProjectWithoutTag() {
+    User mockUser = mocksObjects.mockUser;
+    CreateProjectDTO mockCreateProjectDTO = mocksObjects.mockCreateProjectDTO;
+    Project mockProjectDTOWithoutTag = mocksObjects.mockProjectWithoutTag;
+    ProjectDTO mockProjectDTO = mocksObjects.mockProjectDTO;
+    List<Tag> tags = mocksObjects.mockTags;
+    MockMultipartFile mockMultipartFileImage = mocksObjects.mockMultipartFileImage;
+
+    when(usersRepository.findById(mockUser.getId())).thenReturn(Optional.of(mockUser));
+    when(mapper.map(mockCreateProjectDTO, Project.class)).thenReturn(mockProjectDTOWithoutTag);
+    when(tagsService.findAll()).thenReturn(tags);
+    when(mapper.map(mockProjectDTOWithoutTag, ProjectDTO.class)).thenReturn(mockProjectDTO);
+    when(projectsRepository.save(mockProjectDTOWithoutTag)).thenReturn(mockProjectDTOWithoutTag);
+
+    Exception exception = assertThrowsExactly(BadRequestRuntimeException.class, () -> projectsService.create(mockUser.getId(), mockCreateProjectDTO, null));
+
+    assertEquals(exception.getMessage(), "Tag inexistente");
+
+    verify(usersRepository, times(1)).findById(mockUser.getId());
+    verify(mapper, times(1)).map(mockCreateProjectDTO, Project.class);
+    verify(tagsService, times(1)).findAll();
+    verify(imageUploadService, times(0)).uploadImage(mockMultipartFileImage);
+    verify(mapper, times(0)).map(mockProjectDTOWithoutTag, ProjectDTO.class);
+    verify(projectsRepository, times(0)).save(mockProjectDTOWithoutTag);
   }
 
   @Test
