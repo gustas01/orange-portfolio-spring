@@ -37,7 +37,10 @@ public class ProjectsController {
           @RequestParam(value = "size", defaultValue = "10") Integer size){
 
     Pageable pageable = PageRequest.of(page, size);
-    Page<Project> projects = this.projectsService.discovery(pageable);
+    String token = this.tokenService.recoverToken(request);
+    UUID userId = UUID.fromString(this.tokenService.validateToken(token));
+
+    Page<Project> projects = this.projectsService.discovery(userId, pageable);
 
     return ResponseEntity.ok(projects) ;
   }

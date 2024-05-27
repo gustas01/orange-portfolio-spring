@@ -63,8 +63,8 @@ public class ProjectsService {
     return mapper.map(this.projectsRepository.save(project), ProjectDTO.class);
   }
 
-  public Page<Project> discovery(Pageable pageable){;
-    Page<Project> projects = this.projectsRepository.findAll(pageable);
+  public Page<Project> discovery(UUID userId, Pageable pageable){;
+    Page<Project> projects = this.projectsRepository.findAllByAuthorIdNot(userId, pageable);
     return projects;
   }
 
@@ -76,8 +76,8 @@ public class ProjectsService {
   }
 
   //chamar lá no userController
-  public Page<Project> findAllByAuthor(UUID id, Pageable pageable){
-    return this.projectsRepository.findAllByAuthorId(id, pageable);
+  public Page<Project> findAllByAuthor(UUID userId, Pageable pageable){
+    return this.projectsRepository.findAllByAuthorId(userId, pageable);
   }
 
   public ProjectDTO update(UUID userId, UUID id, UpdateProjectDTO project, MultipartFile file) {

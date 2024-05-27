@@ -14,4 +14,5 @@ import java.util.UUID;
 public interface ProjectsRepository extends JpaRepository<Project, UUID> {
 //  @Query("SELECT p FROM Project p WHERE p.author_id=:id")
   Page<Project> findAllByAuthorId(UUID id, Pageable pageable);
+  Page<Project> findAllByAuthorIdNot(UUID id, Pageable pageable);
 }
