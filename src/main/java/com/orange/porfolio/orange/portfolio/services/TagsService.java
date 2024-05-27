@@ -28,8 +28,13 @@ public class TagsService {
 
   public TagDTO create(CreateTagDTO createTagDTO){
     Optional<Tag> tag = this.tagsRepository.findOneByTagName(createTagDTO.getTagName());
-    if (tag.isPresent())
-      throw new BadRequestRuntimeException("Tag já existe!");
+    if (tag.isPresent()){
+      if (tag.get().getActive())
+        throw new BadRequestRuntimeException("Tag já existe!");
+      tag.get().setActive(true);
+      this.tagsRepository.save(tag.get());
+      return mapper.map(tag, TagDTO.class);
+    }
     Tag newTag = mapper.map(createTagDTO, Tag.class);
     return mapper.map(this.tagsRepository.save(newTag), TagDTO.class);
   }
