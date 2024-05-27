@@ -50,8 +50,10 @@ class AuthServiceTest {
   private AuthService authService;
 
   AutoCloseable autoCloseable;
+  TestUtilsMocks mocksObjects;
   @BeforeEach
   void setup(){
+    mocksObjects = new TestUtilsMocks();
     autoCloseable = MockitoAnnotations.openMocks(this);
   }
 
@@ -63,9 +65,9 @@ class AuthServiceTest {
   @Test
   @DisplayName("Should return a jwt token")
   void loginSuccess() {
-    LoginUserDTO mockLoginUserDTO = TestUtilsMocks.mockLoginUserDTO;
-    User mockUser = TestUtilsMocks.mockUser;
-    String mockToken = TestUtilsMocks.mockToken;
+    LoginUserDTO mockLoginUserDTO = mocksObjects.mockLoginUserDTO;
+    User mockUser = mocksObjects.mockUser;
+    String mockToken = mocksObjects.mockToken;
 
     when(usersRepository.findByEmail(mockLoginUserDTO.getEmail())).thenReturn(Optional.of(mockUser));
     when(tokenService.generateToken(mockUser)).thenReturn(mockToken);
@@ -81,9 +83,9 @@ class AuthServiceTest {
   @Test
   @DisplayName("Should throw an BadRequestRuntimeException")
   void loginFailure() {
-    LoginUserDTO mockLoginUserDTO = TestUtilsMocks.mockLoginUserDTO;
-    User mockUser = TestUtilsMocks.mockUser;
-    String mockToken = TestUtilsMocks.mockToken;
+    LoginUserDTO mockLoginUserDTO = mocksObjects.mockLoginUserDTO;
+    User mockUser = mocksObjects.mockUser;
+    String mockToken = mocksObjects.mockToken;
 
     when(usersRepository.findByEmail(mockLoginUserDTO.getEmail())).thenReturn(Optional.of(mockUser));
     when(tokenService.generateToken(mockUser)).thenReturn(mockToken);
@@ -101,12 +103,12 @@ class AuthServiceTest {
   @Test
   @DisplayName("Should register a user WITH an avatar WITH CORRECT format")
   void registerSuccessWithAvatarWithCorrectFormat() {
-    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
-    User mockUser = TestUtilsMocks.mockUser;
-    UserDTO mockUserDTO = TestUtilsMocks.mockUserDTO;
-    Role mockRoleUser = TestUtilsMocks.mockRoleUser;
-    ImgurResponse mockImgurResponse =TestUtilsMocks.mockImgurResponse;
-    MockMultipartFile mockMultipartFileImage =TestUtilsMocks.mockMultipartFileImage;
+    CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
+    User mockUser = mocksObjects.mockUser;
+    UserDTO mockUserDTO = mocksObjects.mockUserDTO;
+    Role mockRoleUser = mocksObjects.mockRoleUser;
+    ImgurResponse mockImgurResponse =mocksObjects.mockImgurResponse;
+    MockMultipartFile mockMultipartFileImage =mocksObjects.mockMultipartFileImage;
 
     when(usersRepository.findByEmail(mockCreateUserDTO.getEmail())).thenReturn(Optional.empty());
     when(roleRepository.findByName(mockRoleUser.getName())).thenReturn(mockRoleUser);
@@ -137,12 +139,12 @@ class AuthServiceTest {
   @Test
   @DisplayName("Should try to register a user WITH an avatar WITH INCORRECT format")
   void registerSuccessWithAvatarWithIncorrectFormat() {
-    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
-    User mockUser = TestUtilsMocks.mockUser;
-    UserDTO mockUserDTO = TestUtilsMocks.mockUserDTO;
-    Role mockRoleUser = TestUtilsMocks.mockRoleUser;
-    ImgurResponse mockImgurResponse =TestUtilsMocks.mockImgurResponse;
-    MockMultipartFile mockMultipartFileText =TestUtilsMocks.mockMultipartFileText;
+    CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
+    User mockUser = mocksObjects.mockUser;
+    UserDTO mockUserDTO = mocksObjects.mockUserDTO;
+    Role mockRoleUser = mocksObjects.mockRoleUser;
+    ImgurResponse mockImgurResponse =mocksObjects.mockImgurResponse;
+    MockMultipartFile mockMultipartFileText =mocksObjects.mockMultipartFileText;
 
     when(usersRepository.findByEmail(mockCreateUserDTO.getEmail())).thenReturn(Optional.empty());
     when(roleRepository.findByName(mockRoleUser.getName())).thenReturn(mockRoleUser);
@@ -166,10 +168,10 @@ class AuthServiceTest {
   @Test
   @DisplayName("Should register a user WITHOUT an avatar")
   void registerSuccessWithoutAvatar() {
-    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
-    User mockUser = TestUtilsMocks.mockUser;
-    UserDTO mockUserDTO = TestUtilsMocks.mockUserDTO;
-    Role mockRoleUser = TestUtilsMocks.mockRoleUser;
+    CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
+    User mockUser = mocksObjects.mockUser;
+    UserDTO mockUserDTO = mocksObjects.mockUserDTO;
+    Role mockRoleUser = mocksObjects.mockRoleUser;
 
     when(usersRepository.findByEmail(mockCreateUserDTO.getEmail())).thenReturn(Optional.empty());
     when(roleRepository.findByName(mockRoleUser.getName())).thenReturn(mockRoleUser);
@@ -197,10 +199,9 @@ class AuthServiceTest {
   @Test
   @DisplayName("Should login with google with a existing google user")
   void loginWithGoogleWithExistingUser() {
-    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
-    User mockUser = TestUtilsMocks.mockUser;
-    Role mockRoleUser = TestUtilsMocks.mockRoleUser;
-    String mockToken = TestUtilsMocks.mockToken;
+    User mockUser = mocksObjects.mockUser;
+    Role mockRoleUser = mocksObjects.mockRoleUser;
+    String mockToken = mocksObjects.mockToken;
 
 
     OAuth2User oAuth2User = new DefaultOAuth2User(Collections.singletonList(() -> "user"),
@@ -231,10 +232,9 @@ class AuthServiceTest {
   @Test
   @DisplayName("Should login with google with a NOT existing google user")
   void loginWithGoogleWithNotExistingUser() {
-    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
-    User mockUser = TestUtilsMocks.mockUser;
-    Role mockRoleUser = TestUtilsMocks.mockRoleUser;
-    String mockToken = TestUtilsMocks.mockToken;
+    User mockUser = mocksObjects.mockUser;
+    Role mockRoleUser = mocksObjects.mockRoleUser;
+    String mockToken = mocksObjects.mockToken;
 
 
     OAuth2User oAuth2User = new DefaultOAuth2User(Collections.singletonList(() -> "user"),

@@ -41,8 +41,9 @@ class ProjectsRepositoryTest {
   @Test
   @DisplayName("should get a page of projects successfully from DB")
   void findAllByAuthorIdSuccess() {
-    User mockUser = TestUtilsMocks.mockUser;
-    CreateProjectDTO mockCreateProjectDTO = TestUtilsMocks.mockCreateProjectDTO;
+    TestUtilsMocks mocksObjects = new TestUtilsMocks();
+    User mockUser = mocksObjects.mockUser;
+    CreateProjectDTO mockCreateProjectDTO = mocksObjects.mockCreateProjectDTO;
 
 
     Project persistedProject = this.createProject(mockCreateProjectDTO);
@@ -72,7 +73,8 @@ class ProjectsRepositoryTest {
   @Test
   @DisplayName("should NOT get a page of projects successfully from DB")
   void findAllByAuthorIdFail() {
-    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
+    TestUtilsMocks mocksObjects = new TestUtilsMocks();
+    CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
 
     User persistedUser = this.createUser(mockCreateUserDTO);
 
@@ -90,7 +92,8 @@ class ProjectsRepositoryTest {
   }
 
   private Project createProject(CreateProjectDTO data){
-    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
+    TestUtilsMocks mocksObjects = new TestUtilsMocks();
+    CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
     User persistedUser = this.createUser(mockCreateUserDTO);
     Project newProject = mapper.map(data, Project.class);
     newProject.setAuthor(persistedUser);
