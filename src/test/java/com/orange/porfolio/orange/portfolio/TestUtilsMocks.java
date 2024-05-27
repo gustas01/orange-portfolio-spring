@@ -4,6 +4,7 @@ import com.orange.porfolio.orange.portfolio.DTOs.*;
 import com.orange.porfolio.orange.portfolio.entities.Role;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,5 +21,4 @@ public class TestUtilsMocks {
   public static ImgurResponse mockImgurResponse = new ImgurResponse(new ImgurResponse.Data("http://uploadSuccess.com"));
   public static MockMultipartFile mockMultipartFileImage = new MockMultipartFile("avatarImage", "myAvatar", "image/jpeg", new byte[] { 1 });
   public static MockMultipartFile mockMultipartFileText =  new MockMultipartFile("avatarImage", "myAvatar", "text/txt", new byte[] { 1 });
-
 }

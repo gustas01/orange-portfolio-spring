@@ -12,7 +12,6 @@ import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeExceptio
 import com.orange.porfolio.orange.portfolio.repositories.RoleRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import com.orange.porfolio.orange.portfolio.security.TokenService;
-import org.assertj.core.internal.Bytes;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -21,10 +20,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -42,6 +42,8 @@ class AuthServiceTest {
   private RoleRepository roleRepository;
   @Mock
   private ImageUploadService imageUploadService;
+  @Mock
+  private OAuth2AuthenticationToken mockOAuth2AuthenticationToken;
 
   @Autowired
   @InjectMocks
@@ -121,11 +123,19 @@ class AuthServiceTest {
     assertEquals(response.getEmail(), mockUser.getEmail());
     assertEquals(mockUser.getAvatarUrl(), mockImgurResponse.getData().getLink());
     assertEquals(response.getProjects(), mockUser.getProjects());
+
+    verify(usersRepository, times(1)).findByEmail(mockCreateUserDTO.getEmail());
+    verify(roleRepository, times(1)).findByName(mockRoleUser.getName());
+    verify(mapper, times(1)).map(mockCreateUserDTO, User.class);
+    verify(passwordEncoder, times(1)).encode(mockCreateUserDTO.getPassword());
+    verify(imageUploadService, times(1)).uploadImage(mockMultipartFileImage);
+    verify(usersRepository, times(1)).save(mockUser);
+    verify(mapper, times(1)).map(mockUser, UserDTO.class);
   }
 
 
   @Test
-  @DisplayName("Should register a user WITH an avatar WITH INCORRECT format")
+  @DisplayName("Should try to register a user WITH an avatar WITH INCORRECT format")
   void registerSuccessWithAvatarWithIncorrectFormat() {
     CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
     User mockUser = TestUtilsMocks.mockUser;
@@ -143,8 +153,14 @@ class AuthServiceTest {
 
     when(imageUploadService.uploadImage(mockMultipartFileText)).thenReturn(mockImgurResponse);
 
+
     Exception exception = assertThrowsExactly(BadRequestRuntimeException.class, () -> authService.register(mockCreateUserDTO, mockMultipartFileText));
     assertEquals(exception.getMessage(), "Tipo de arquivo não suportado. Use arquivos .JPG ou .PNG");
+
+    verify(usersRepository, times(1)).findByEmail(mockCreateUserDTO.getEmail());
+    verify(roleRepository, times(1)).findByName(mockRoleUser.getName());
+    verify(mapper, times(1)).map(mockCreateUserDTO, User.class);
+    verify(passwordEncoder, times(1)).encode(mockCreateUserDTO.getPassword());
   }
 
   @Test
@@ -154,7 +170,6 @@ class AuthServiceTest {
     User mockUser = TestUtilsMocks.mockUser;
     UserDTO mockUserDTO = TestUtilsMocks.mockUserDTO;
     Role mockRoleUser = TestUtilsMocks.mockRoleUser;
-    ImgurResponse mockImgurResponse =TestUtilsMocks.mockImgurResponse;
 
     when(usersRepository.findByEmail(mockCreateUserDTO.getEmail())).thenReturn(Optional.empty());
     when(roleRepository.findByName(mockRoleUser.getName())).thenReturn(mockRoleUser);
@@ -170,9 +185,80 @@ class AuthServiceTest {
     assertEquals(response.getEmail(), mockUser.getEmail());
     assertEquals(mockUser.getAvatarUrl(), "");
     assertEquals(response.getProjects(), mockUser.getProjects());
+
+    verify(usersRepository, times(1)).findByEmail(mockCreateUserDTO.getEmail());
+    verify(roleRepository, times(1)).findByName(mockRoleUser.getName());
+    verify(mapper, times(1)).map(mockCreateUserDTO, User.class);
+    verify(passwordEncoder, times(1)).encode(mockCreateUserDTO.getPassword());
+    verify(usersRepository, times(1)).save(mockUser);
+    verify(mapper, times(1)).map(mockUser, UserDTO.class);
   }
 
   @Test
-  void loginWithGoogle() {
+  @DisplayName("Should login with google with a existing google user")
+  void loginWithGoogleWithExistingUser() {
+    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
+    User mockUser = TestUtilsMocks.mockUser;
+    Role mockRoleUser = TestUtilsMocks.mockRoleUser;
+    String mockToken = TestUtilsMocks.mockToken;
+
+
+    OAuth2User oAuth2User = new DefaultOAuth2User(Collections.singletonList(() -> "user"),
+            Map.of("given_name", mockUser.getFirstName(),
+                  "family_name", mockUser.getLastName(),
+                  "email", mockUser.getEmail(),
+                  "name", mockUser.getFirstName()
+            ), "name");
+
+    when(mockOAuth2AuthenticationToken.getPrincipal()).thenReturn(oAuth2User);
+
+    when(usersRepository.findByEmail(mockUser.getEmail())).thenReturn(Optional.of(mockUser));
+    when(mapper.map(mockUser, User.class)).thenReturn(mockUser);
+    when(roleRepository.findByName(mockRoleUser.getName())).thenReturn(mockRoleUser);
+
+    when(tokenService.generateToken(mockUser)).thenReturn(mockToken);
+    String token = authService.loginWithGoogle(mockOAuth2AuthenticationToken);
+
+    assertEquals(mockToken, token);
+    verify(usersRepository, times(1)).findByEmail(mockUser.getEmail());
+    verify(usersRepository, times(0)).save(mockUser);
+    verify(mapper, times(1)).map(mockUser, User.class);
+    verify(roleRepository, times(1)).findByName(mockRoleUser.getName());
+    verify(tokenService, times(1)).generateToken(mockUser);
+  }
+
+
+  @Test
+  @DisplayName("Should login with google with a NOT existing google user")
+  void loginWithGoogleWithNotExistingUser() {
+    CreateUserDTO mockCreateUserDTO = TestUtilsMocks.mockCreateUserDTO;
+    User mockUser = TestUtilsMocks.mockUser;
+    Role mockRoleUser = TestUtilsMocks.mockRoleUser;
+    String mockToken = TestUtilsMocks.mockToken;
+
+
+    OAuth2User oAuth2User = new DefaultOAuth2User(Collections.singletonList(() -> "user"),
+            Map.of("given_name", mockUser.getFirstName(),
+                    "family_name", mockUser.getLastName(),
+                    "email", mockUser.getEmail(),
+                    "name", mockUser.getFirstName()
+            ), "name");
+
+    when(mockOAuth2AuthenticationToken.getPrincipal()).thenReturn(oAuth2User);
+
+    when(usersRepository.findByEmail(mockUser.getEmail())).thenReturn(Optional.empty());
+    when(mapper.map(mockUser, User.class)).thenReturn(mockUser);
+    when(roleRepository.findByName(mockRoleUser.getName())).thenReturn(mockRoleUser);
+    when(usersRepository.save(any(User.class))).thenReturn(mockUser);
+
+    when(tokenService.generateToken(any(User.class))).thenReturn(mockToken);
+    String token = authService.loginWithGoogle(mockOAuth2AuthenticationToken);
+
+    assertEquals(mockToken, token);
+    verify(usersRepository, times(1)).findByEmail(mockUser.getEmail());
+    verify(usersRepository, times(1)).save(any(User.class));
+    verify(mapper, times(0)).map(mockUser, User.class);
+    verify(roleRepository, times(1)).findByName(mockRoleUser.getName());
+    verify(tokenService, times(1)).generateToken(any(User.class));
   }
 }
