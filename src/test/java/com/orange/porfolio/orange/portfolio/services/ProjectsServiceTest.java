@@ -3,12 +3,14 @@ package com.orange.porfolio.orange.portfolio.services;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.ImgurResponse;
 import com.orange.porfolio.orange.portfolio.DTOs.ProjectDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.UpdateProjectDTO;
 import com.orange.porfolio.orange.portfolio.TestUtilsMocks;
 import com.orange.porfolio.orange.portfolio.config.ImageUploadService;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
+import com.orange.porfolio.orange.portfolio.exceptions.ForbiddenRuntimeException;
 import com.orange.porfolio.orange.portfolio.repositories.ProjectsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -226,12 +228,132 @@ class ProjectsServiceTest {
     verify(projectsRepository, times(1)).findById(mockProject.getId());
   }
 
-  @Test
-  void findAllByAuthor() {
-  }
 
   @Test
-  void update() {
+  @DisplayName("Should update a project WITH tag and WITH Thumbnail")
+  void updateSuccessWithTagWithThumbnail() {
+    User mockUser = mocksObjects.mockUser;
+    Project mockProject = mocksObjects.mockProject;
+    UpdateProjectDTO mockUpdateProjectDTO = mocksObjects.mockUpdateProjectDTO;
+    MockMultipartFile mockMultipartFileImage = mocksObjects.mockMultipartFileImage;
+    ImgurResponse mockImgurResponse = mocksObjects.mockImgurResponse;
+    ProjectDTO mockProjectDTO = mocksObjects.mockProjectDTO;
+    Tag mockTag = mocksObjects.mockTag;
+    List<Tag> mockTags = mocksObjects.mockTags;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.of(mockProject));
+    when(imageUploadService.uploadImage(mockMultipartFileImage)).thenReturn(mockImgurResponse);
+    when(projectsRepository.save(mockProject)).thenReturn(mockProject);
+    when(mapper.map(mockProject, ProjectDTO.class)).thenReturn(mockProjectDTO);
+    when(tagsService.findAll()).thenReturn(mockTags);
+
+    mockUpdateProjectDTO.getTags().add(mockTag.getTagName());
+
+    ProjectDTO response = projectsService.update(mockUser.getId(), mockProject.getId(), mockUpdateProjectDTO, mockMultipartFileImage);
+
+    assertEquals(mockProject.getTitle(), mockUpdateProjectDTO.getTitle());
+    assertEquals(mockProject.getDescription(), mockUpdateProjectDTO.getDescription());
+    assertEquals(mockProject.getUrl(), mockUpdateProjectDTO.getUrl());
+    assertEquals(mockProject.getThumbnailUrl(), mockImgurResponse.getData().getLink());
+    assertEquals(mockProject.getTags().toArray()[0], mockTags.toArray()[0]);
+    assertEquals(response.getTitle(), mockProjectDTO.getTitle());
+    assertEquals(response.getDescription(), mockProjectDTO.getDescription());
+    assertEquals(response.getUrl(), mockProjectDTO.getUrl());
+    assertEquals(response.getThumbnailUrl(), "");
+    assertEquals(response.getTags(), mockProject.getTags());
+
+    verify(projectsRepository, times(1)).findById(mockProject.getId());
+    verify(imageUploadService, times(1)).uploadImage(mockMultipartFileImage);
+    verify(projectsRepository, times(1)).save(mockProject);
+    verify(mapper, times(1)).map(mockProject, ProjectDTO.class);
+    verify(tagsService, times(1)).findAll();
+  }
+
+
+  @Test
+  @DisplayName("Should update a project WITH tag and WITHOUT a thumbnail")
+  void updateSuccessWithTagWithoutThumbnail() {
+    User mockUser = mocksObjects.mockUser;
+    Project mockProject = mocksObjects.mockProject;
+    UpdateProjectDTO mockUpdateProjectDTO = mocksObjects.mockUpdateProjectDTO;
+    ProjectDTO mockProjectDTO = mocksObjects.mockProjectDTO;
+    Tag mockTag = mocksObjects.mockTag;
+    List<Tag> mockTags = mocksObjects.mockTags;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.of(mockProject));
+    when(projectsRepository.save(mockProject)).thenReturn(mockProject);
+    when(mapper.map(mockProject, ProjectDTO.class)).thenReturn(mockProjectDTO);
+    when(tagsService.findAll()).thenReturn(mockTags);
+
+    mockUpdateProjectDTO.getTags().add(mockTag.getTagName());
+
+    ProjectDTO response = projectsService.update(mockUser.getId(), mockProject.getId(), mockUpdateProjectDTO, null);
+
+    assertEquals(mockProject.getTitle(), mockUpdateProjectDTO.getTitle());
+    assertEquals(mockProject.getDescription(), mockUpdateProjectDTO.getDescription());
+    assertEquals(mockProject.getUrl(), mockUpdateProjectDTO.getUrl());
+    assertEquals(mockProject.getThumbnailUrl(), "");
+    assertEquals(mockProject.getTags().toArray()[0], mockTags.toArray()[0]);
+    assertEquals(response.getTitle(), mockProjectDTO.getTitle());
+    assertEquals(response.getDescription(), mockProjectDTO.getDescription());
+    assertEquals(response.getUrl(), mockProjectDTO.getUrl());
+    assertEquals(response.getThumbnailUrl(), "");
+    assertEquals(response.getTags(), mockProject.getTags());
+
+    verify(projectsRepository, times(1)).findById(mockProject.getId());
+    verify(projectsRepository, times(1)).save(mockProject);
+    verify(mapper, times(1)).map(mockProject, ProjectDTO.class);
+    verify(tagsService, times(1)).findAll();
+  }
+
+
+  @Test
+  @DisplayName("Should update a project WITHOUT tag and WITHOUT a thumbnail")
+  void updateSuccessWithoutTagWithoutThumbnail() {
+    User mockUser = mocksObjects.mockUser;
+    Project mockProject = mocksObjects.mockProject;
+    UpdateProjectDTO mockUpdateProjectDTO = mocksObjects.mockUpdateProjectDTO;
+    ProjectDTO mockProjectDTO = mocksObjects.mockProjectDTO;
+    List<Tag> mockTags = mocksObjects.mockTags;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.of(mockProject));
+    when(projectsRepository.save(mockProject)).thenReturn(mockProject);
+    when(mapper.map(mockProject, ProjectDTO.class)).thenReturn(mockProjectDTO);
+
+    ProjectDTO response = projectsService.update(mockUser.getId(), mockProject.getId(), mockUpdateProjectDTO, null);
+
+    assertEquals(mockProject.getTitle(), mockUpdateProjectDTO.getTitle());
+    assertEquals(mockProject.getDescription(), mockUpdateProjectDTO.getDescription());
+    assertEquals(mockProject.getUrl(), mockUpdateProjectDTO.getUrl());
+    assertEquals(mockProject.getThumbnailUrl(), "");
+    assertEquals(mockProject.getTags().toArray()[0], mockTags.toArray()[0]);
+    assertEquals(response.getTitle(), mockProjectDTO.getTitle());
+    assertEquals(response.getDescription(), mockProjectDTO.getDescription());
+    assertEquals(response.getUrl(), mockProjectDTO.getUrl());
+    assertEquals(response.getThumbnailUrl(), "");
+    assertEquals(response.getTags(), mockProject.getTags());
+
+    verify(projectsRepository, times(1)).findById(mockProject.getId());
+    verify(projectsRepository, times(1)).save(mockProject);
+    verify(mapper, times(1)).map(mockProject, ProjectDTO.class);
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to update a project WITHOUT tag and WITHOUT a thumbnail and throw an exception because of permission")
+  void updateFailureWithoutTagWithoutThumbnail() {
+    Project mockProject = mocksObjects.mockProject;
+    UpdateProjectDTO mockUpdateProjectDTO = mocksObjects.mockUpdateProjectDTO;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.of(mockProject));
+
+    Exception exception = assertThrowsExactly(ForbiddenRuntimeException.class, () -> projectsService.update(mockProject.getId(), mockProject.getId(), mockUpdateProjectDTO, null));
+
+    assertEquals(exception.getMessage(), "Você não tem autorização para atualizar projeto de outro usuário!");
+    verify(projectsRepository, times(1)).findById(mockProject.getId());
+    verify(projectsRepository, times(0)).save(mockProject);
+    verify(mapper, times(0)).map(mockProject, ProjectDTO.class);
+    verify(tagsService, times(0)).findAll();
   }
 
   @Test
