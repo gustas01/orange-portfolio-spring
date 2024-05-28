@@ -195,7 +195,35 @@ class ProjectsServiceTest {
   }
 
   @Test
-  void findOne() {
+  @DisplayName("Should return one project by Id")
+  void findOneSuccess() {
+    Project mockProject = mocksObjects.mockProject;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.of(mockProject));
+
+    Project response = projectsService.findOne(mockProject.getId());
+
+    assertEquals(response.getTitle(), mockProject.getTitle());
+    assertEquals(response.getDescription(), mockProject.getDescription());
+    assertEquals(response.getUrl(), mockProject.getUrl());
+    assertEquals(response.getThumbnailUrl(), mockProject.getThumbnailUrl());
+    assertEquals(response.getAuthor().getId(), mockProject.getAuthor().getId());
+    verify(projectsRepository, times(1)).findById(mockProject.getId());
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to return one project by Id and throw an exception")
+  void findOneFail() {
+    Project mockProject = mocksObjects.mockProject;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.empty());
+
+    Exception exception = assertThrowsExactly(EntityNotFoundException.class, () -> projectsService.findOne(mockProject.getId()));
+
+    assertEquals(exception.getMessage(), "Projeto não encontrado!");
+
+    verify(projectsRepository, times(1)).findById(mockProject.getId());
   }
 
   @Test
