@@ -22,6 +22,8 @@ public class TestUtilsMocks {
   public MockMultipartFile mockMultipartFileText =  new MockMultipartFile("avatarImage", "myAvatar", "text/txt", new byte[] { 1 });
   public Tag mockTag = new Tag(1, "backend", List.of(), true);
   public List<Tag> mockTags = List.of(mockTag);
+  public TagDTO mockTagDTO = new TagDTO(1, "backend");
+  public CreateTagDTO mockCreateTagDTO = new CreateTagDTO("backend");
   public Project mockProject = new Project(UUID.fromString("c9d7c521-5e4c-4e2a-b604-dac3d11bb5c0"), "Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br", "", LocalDateTime.now(), mockUser, new HashSet<>(Arrays.asList(mockTag)));
   public ProjectDTO mockProjectDTO = new ProjectDTO(UUID.fromString("c9d7c521-5e4c-4e2a-b604-dac3d11bb5c0"), "Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br", "", LocalDateTime.now(), new HashSet<>(Arrays.asList(mockTag)));
   public CreateProjectDTO mockCreateProjectDTO = new CreateProjectDTO("Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br");
