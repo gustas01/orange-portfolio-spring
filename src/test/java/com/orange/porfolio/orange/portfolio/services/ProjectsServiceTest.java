@@ -271,6 +271,38 @@ class ProjectsServiceTest {
 
 
   @Test
+  @DisplayName("Should TRY to update and throw an exception because of Thumbnail with INCORRECT format")
+  void updateFailureWithTagWithThumbnailIncorrectFormat() {
+    User mockUser = mocksObjects.mockUser;
+    Project mockProject = mocksObjects.mockProject;
+    UpdateProjectDTO mockUpdateProjectDTO = mocksObjects.mockUpdateProjectDTO;
+    MockMultipartFile mockMultipartFileText = mocksObjects.mockMultipartFileText;
+    ImgurResponse mockImgurResponse = mocksObjects.mockImgurResponse;
+    ProjectDTO mockProjectDTO = mocksObjects.mockProjectDTO;
+    Tag mockTag = mocksObjects.mockTag;
+    List<Tag> mockTags = mocksObjects.mockTags;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.of(mockProject));
+    when(imageUploadService.uploadImage(mockMultipartFileText)).thenReturn(mockImgurResponse);
+    when(projectsRepository.save(mockProject)).thenReturn(mockProject);
+    when(mapper.map(mockProject, ProjectDTO.class)).thenReturn(mockProjectDTO);
+    when(tagsService.findAll()).thenReturn(mockTags);
+
+    mockUpdateProjectDTO.getTags().add(mockTag.getTagName());
+
+    Exception exception = assertThrowsExactly(BadRequestRuntimeException.class, () -> projectsService.update(mockUser.getId(), mockProject.getId(), mockUpdateProjectDTO, mockMultipartFileText));
+
+    assertEquals(exception.getMessage(), "Tipo de arquivo não suportado. Use arquivos .JPG ou .PNG");
+
+    verify(projectsRepository, times(1)).findById(mockProject.getId());
+    verify(imageUploadService, times(0)).uploadImage(mockMultipartFileText);
+    verify(projectsRepository, times(0)).save(mockProject);
+    verify(mapper, times(0)).map(mockProject, ProjectDTO.class);
+    verify(tagsService, times(1)).findAll();
+  }
+
+
+  @Test
   @DisplayName("Should update a project WITH tag and WITHOUT a thumbnail")
   void updateSuccessWithTagWithoutThumbnail() {
     User mockUser = mocksObjects.mockUser;
@@ -350,6 +382,24 @@ class ProjectsServiceTest {
     Exception exception = assertThrowsExactly(ForbiddenRuntimeException.class, () -> projectsService.update(mockProject.getId(), mockProject.getId(), mockUpdateProjectDTO, null));
 
     assertEquals(exception.getMessage(), "Você não tem autorização para atualizar projeto de outro usuário!");
+    verify(projectsRepository, times(1)).findById(mockProject.getId());
+    verify(projectsRepository, times(0)).save(mockProject);
+    verify(mapper, times(0)).map(mockProject, ProjectDTO.class);
+    verify(tagsService, times(0)).findAll();
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to update a project and throw an exception because project doesn't exist")
+  void updateFailureProjectNotFound() {
+    Project mockProject = mocksObjects.mockProject;
+    UpdateProjectDTO mockUpdateProjectDTO = mocksObjects.mockUpdateProjectDTO;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.empty());
+
+    Exception exception = assertThrowsExactly(EntityNotFoundException.class, () -> projectsService.update(mockProject.getId(), mockProject.getId(), mockUpdateProjectDTO, null));
+
+    assertEquals(exception.getMessage(), "Projeto não encontrado!");
     verify(projectsRepository, times(1)).findById(mockProject.getId());
     verify(projectsRepository, times(0)).save(mockProject);
     verify(mapper, times(0)).map(mockProject, ProjectDTO.class);
