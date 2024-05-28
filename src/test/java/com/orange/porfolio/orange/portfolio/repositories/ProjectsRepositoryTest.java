@@ -2,7 +2,6 @@ package com.orange.porfolio.orange.portfolio.repositories;
 
 import com.orange.porfolio.orange.portfolio.DTOs.CreateProjectDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
-import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
 import com.orange.porfolio.orange.portfolio.TestUtilsMocks;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Role;
@@ -21,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,7 +38,7 @@ class ProjectsRepositoryTest {
 
   @Test
   @DisplayName("should get a page of projects successfully from DB")
-  void findAllByAuthorIdSuccess() {
+  void findAllByAuthorIdNotSuccess() {
     TestUtilsMocks mocksObjects = new TestUtilsMocks();
     User mockUser = mocksObjects.mockUser;
     CreateProjectDTO mockCreateProjectDTO = mocksObjects.mockCreateProjectDTO;
@@ -49,16 +47,16 @@ class ProjectsRepositoryTest {
     Project persistedProject = this.createProject(mockCreateProjectDTO);
     Pageable pageable = PageRequest.of(0, 10);
 
-    Page<Project> projectDTOS = this.projectsRepository
-                    .findAllByAuthorId(persistedProject.getAuthor().getId(), pageable);
+    Page<Project> projects = this.projectsRepository
+                    .findAllByAuthorIdNot(mockUser.getId(), pageable);
 
-    assertNotNull(projectDTOS);
-    assertEquals(projectDTOS.getContent().getFirst().getTitle(), mockCreateProjectDTO.getTitle());
-    assertEquals(projectDTOS.getContent().getFirst().getDescription(), mockCreateProjectDTO.getDescription());
-    assertEquals(projectDTOS.getContent().getFirst().getUrl(), mockCreateProjectDTO.getUrl());
-    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getFirstName(), mockUser.getFirstName());
-    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getLastName(), mockUser.getLastName());
-    assertEquals(projectDTOS.getContent().getFirst().getAuthor().getEmail(), mockUser.getEmail());
+    assertNotNull(persistedProject);
+    assertEquals(projects.getContent().getFirst().getTitle(), mockCreateProjectDTO.getTitle());
+    assertEquals(projects.getContent().getFirst().getDescription(), mockCreateProjectDTO.getDescription());
+    assertEquals(projects.getContent().getFirst().getUrl(), mockCreateProjectDTO.getUrl());
+    assertEquals(projects.getContent().getFirst().getAuthor().getFirstName(), mockUser.getFirstName());
+    assertEquals(projects.getContent().getFirst().getAuthor().getLastName(), mockUser.getLastName());
+    assertEquals(projects.getContent().getFirst().getAuthor().getEmail(), mockUser.getEmail());
 
     //usando assertJ
 //    assertThat(projectDTOS).isNotNull();
@@ -72,19 +70,20 @@ class ProjectsRepositoryTest {
 
   @Test
   @DisplayName("should NOT get a page of projects successfully from DB")
-  void findAllByAuthorIdFail() {
+  void findAllByAuthorIdNotFail() {
     TestUtilsMocks mocksObjects = new TestUtilsMocks();
+    User mockUser = mocksObjects.mockUser;
     CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
 
     User persistedUser = this.createUser(mockCreateUserDTO);
 
     Pageable pageable = PageRequest.of(0, 10);
 
-    Page<Project> projectDTOS = this.projectsRepository
-            .findAllByAuthorId(persistedUser.getId(), pageable);
+    Page<Project> projects = this.projectsRepository
+            .findAllByAuthorIdNot(mockUser.getId(), pageable);
 
-    assertEquals(projectDTOS.getContent(), List.of());
-    assertEquals(projectDTOS.getNumberOfElements(), 0);
+    assertEquals(projects.getContent(), List.of());
+    assertEquals(projects.getNumberOfElements(), 0);
 
     //usando assertJ
 //    assertThat(projectDTOS.getContent()).isEmpty();
