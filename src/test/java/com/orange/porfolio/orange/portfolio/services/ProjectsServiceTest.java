@@ -407,6 +407,41 @@ class ProjectsServiceTest {
   }
 
   @Test
-  void delete() {
+  @DisplayName("Should delete a project")
+  void deleteSuccess() {
+    User mockUser = mocksObjects.mockUser;
+    Project mockProject = mocksObjects.mockProject;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.of(mockProject));
+
+    String response = projectsService.delete(mockUser.getId(), mockProject.getId());
+
+    assertEquals(response, "Projeto deletado com sucesso");
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to delete a project and throw an exception because of permission")
+  void deleteFailure() {
+    Project mockProject = mocksObjects.mockProject;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.of(mockProject));
+
+    Exception exception = assertThrowsExactly(ForbiddenRuntimeException.class, () -> projectsService.delete(mockProject.getId(), mockProject.getId()));
+
+    assertEquals(exception.getMessage(), "Você não tem autorização para deletar projeto de outro usuário!");
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to delete a project and throw an exception because project doesn't exist")
+  void deleteFailureProjectNotFound() {
+    Project mockProject = mocksObjects.mockProject;
+
+    when(projectsRepository.findById(mockProject.getId())).thenReturn(Optional.empty());
+
+    Exception exception = assertThrowsExactly(EntityNotFoundException.class, () -> projectsService.delete(mockProject.getId(), mockProject.getId()));
+
+    assertEquals(exception.getMessage(), "Projeto não encontrado!");
   }
 }
