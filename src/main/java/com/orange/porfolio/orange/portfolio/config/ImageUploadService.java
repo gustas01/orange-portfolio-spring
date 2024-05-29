@@ -6,13 +6,9 @@ import com.orange.porfolio.orange.portfolio.exceptions.ServiceUnavailableRuntime
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.naming.ServiceUnavailableException;
-import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
 
 @Service
 public class ImageUploadService {

@@ -1,6 +1,5 @@
 package com.orange.porfolio.orange.portfolio.controllers;
 
-import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.UpdateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
 import com.orange.porfolio.orange.portfolio.security.TokenService;

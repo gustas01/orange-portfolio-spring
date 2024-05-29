@@ -1,6 +1,5 @@
 package com.orange.porfolio.orange.portfolio.services;
 
-import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.ImgurResponse;
 import com.orange.porfolio.orange.portfolio.DTOs.UpdateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;

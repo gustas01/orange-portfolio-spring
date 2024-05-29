@@ -26,12 +26,12 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<String> login(@RequestBody @Valid LoginUserDTO loginUserDTO, HttpServletResponse response) throws BadRequestException {
+  public ResponseEntity<String> login(@RequestBody @Valid LoginUserDTO loginUserDTO, HttpServletResponse httpServletResponse) {
     Cookie cookie = new Cookie("token", authService.login(loginUserDTO));
     cookie.setHttpOnly(true);
     cookie.setPath("/");
     cookie.setSecure(true);
-    response.addCookie(cookie);
+    httpServletResponse.addCookie(cookie);
     return ResponseEntity.ok("Usuário logado com sucesso!");
   }
 
