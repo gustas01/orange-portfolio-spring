@@ -36,8 +36,8 @@ public class UsersService {
     this.imageUploadService = imageUploadService;
   }
 
-  public UserDTO findOne(UUID id) {
-    Optional<User> user = this.usersRepository.findById(id);
+  public UserDTO findOne(UUID userId) {
+    Optional<User> user = this.usersRepository.findById(userId);
     if (user.isEmpty())
       throw new EntityNotFoundException("Usuário não encontrado!");
     return mapper.map(user.get(), UserDTO.class);
@@ -50,8 +50,8 @@ public class UsersService {
     return user.get();
   }
 
-  public UserDTO update(UUID id, UpdateUserDTO updateUserDTO, MultipartFile file){
-    User user = this.usersRepository.findById(id)
+  public UserDTO update(UUID userId, UpdateUserDTO updateUserDTO, MultipartFile file){
+    User user = this.usersRepository.findById(userId)
             .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
 
     if (updateUserDTO.getEmail() != null) user.setEmail(updateUserDTO.getEmail());

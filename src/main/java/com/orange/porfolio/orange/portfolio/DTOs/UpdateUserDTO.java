@@ -1,9 +1,11 @@
 package com.orange.porfolio.orange.portfolio.DTOs;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class UpdateUserDTO {
   @Size(max = 30, message = "O nome deve ter no máximo {max} caracteres")
   private String firstName;

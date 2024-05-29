@@ -14,6 +14,7 @@ public class TestUtilsMocks {
   public String mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
   public LoginUserDTO mockLoginUserDTO = new LoginUserDTO("gustavo@email.com","12345678Aa!");
   public CreateUserDTO mockCreateUserDTO = new CreateUserDTO("gustavo", "lima", "gustavo@email.com", "12345678Aa!");
+  public UpdateUserDTO mockUpdateUserDTO = new UpdateUserDTO("gustavo", "lima", "gustavo@email.com", "12345678Aa!");
   public User mockUser = new User(UUID.fromString("1a5b6e9f-a52c-44a8-9a9a-0d609065ca25"), "gustavo", "lima", "gustavo@email.com", "12345678Aa!", "", List.of(), new HashSet<>(), false);
   public UserDTO mockUserDTO = new UserDTO( "gustavo", "lima", "gustavo@email.com", "http://www.meuavatar.com", List.of());
   public Role mockRoleUser = new Role("user");
