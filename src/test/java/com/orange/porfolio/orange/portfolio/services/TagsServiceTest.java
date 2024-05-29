@@ -6,6 +6,7 @@ import com.orange.porfolio.orange.portfolio.TestUtilsMocks;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.exceptions.BadRequestRuntimeException;
 import com.orange.porfolio.orange.portfolio.repositories.TagsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -115,4 +116,28 @@ class TagsServiceTest {
   }
 
 
+  @Test
+  @DisplayName("Should set a tag to INACTIVE (delete)")
+  void deleteSuccessTagSetToInactive(){
+    Tag mockTag = mocksObjects.mockTag;
+
+    when(tagsRepository.findById(mockTag.getId())).thenReturn(Optional.of(mockTag));
+
+    String response = tagsService.delete(mockTag.getId());
+
+    assertEquals(response, "Tag deletada com sucesso");
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to set a tag to INACTIVE (delete) and throw and exception")
+  void deleteFailureTagSetToInactive(){
+    Tag mockTag = mocksObjects.mockTag;
+
+    when(tagsRepository.findById(mockTag.getId())).thenReturn(Optional.empty());
+
+    Exception exception = assertThrowsExactly(EntityNotFoundException.class,() -> tagsService.delete(mockTag.getId())) ;
+
+    assertEquals(exception.getMessage(), "Tag inexistente");
+  }
 }
