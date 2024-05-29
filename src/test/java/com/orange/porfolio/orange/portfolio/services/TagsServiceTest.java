@@ -140,4 +140,46 @@ class TagsServiceTest {
 
     assertEquals(exception.getMessage(), "Tag inexistente");
   }
+
+
+
+  @Test
+  @DisplayName("Should UPDATE a tag")
+  void updateSuccess(){
+    Tag mockTag = mocksObjects.mockTag;
+    CreateTagDTO mockCreateTagDTO = mocksObjects.mockCreateTagDTO;
+
+    when(tagsRepository.findById(mockTag.getId())).thenReturn(Optional.of(mockTag));
+
+    String response = tagsService.update(mockTag.getId(), mockCreateTagDTO);
+
+    assertEquals(response, "Tag atualizada com sucesso!");
+    verify(tagsRepository, times(1)).findById(mockTag.getId());
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to update a tag and throw an exception because of empty tagName")
+  void updateFailureEmptyTagname(){
+    Tag mockTag = mocksObjects.mockTag;
+
+    Exception exception = assertThrowsExactly(BadRequestRuntimeException.class, () -> tagsService.update(mockTag.getId(), new CreateTagDTO(""))) ;
+
+    assertEquals(exception.getMessage(), "Campos obrigatórios estão faltando");
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to update a tag and throw an exception because of non existing Tag")
+  void updateFailureNotExistingTag(){
+    Tag mockTag = mocksObjects.mockTag;
+    CreateTagDTO mockCreateTagDTO = mocksObjects.mockCreateTagDTO;
+
+    when(tagsRepository.findById(mockTag.getId())).thenReturn(Optional.empty());
+
+    Exception exception = assertThrowsExactly(EntityNotFoundException.class, () -> tagsService.update(mockTag.getId(), mockCreateTagDTO)) ;
+
+    assertEquals(exception.getMessage(), "Tag não encontrada!");
+    verify(tagsRepository, times(1)).findById(mockTag.getId());
+  }
 }
