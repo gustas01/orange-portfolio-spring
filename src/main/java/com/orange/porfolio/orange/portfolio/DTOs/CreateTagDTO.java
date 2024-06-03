@@ -5,9 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class CreateTagDTO {
   @NotNull(message = "O nome da Tag é obrigatório")
   @NotEmpty(message = "O nome da Tag não pode estar vazio")
