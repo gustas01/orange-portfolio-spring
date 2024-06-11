@@ -31,4 +31,5 @@ public class TestUtilsMocks {
   public UpdateProjectDTO mockUpdateProjectDTO = new UpdateProjectDTO("Um título de projeto update", "Uma descrição de projeto update", "http://www.umaurldeprojetoupdate.com.br");
   public Project mockProjectWithoutTag = new Project(UUID.fromString("c9d7c521-5e4c-4e2a-b604-dac3d11bb5c0"), "Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br", "", LocalDateTime.now(), mockUser, new HashSet<>());
   public ProjectDTO mockProjectDTOWithoutTag = new ProjectDTO(UUID.fromString("c9d7c521-5e4c-4e2a-b604-dac3d11bb5c0"), "Um título de projeto", "Uma descrição de projeto", "http://www.umaurldeprojeto.com.br", "", LocalDateTime.now(),  new HashSet<>());
+  public String mockUrl = "http://localhost:";
 }
