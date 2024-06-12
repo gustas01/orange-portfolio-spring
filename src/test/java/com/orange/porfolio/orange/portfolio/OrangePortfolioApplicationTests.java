@@ -2,6 +2,7 @@ package com.orange.porfolio.orange.portfolio;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
@@ -21,8 +22,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -47,7 +48,7 @@ class OrangePortfolioApplicationTests {
 
 	@Test
   @DisplayName("Should create an user")
-	void login() throws IOException {
+	void register() throws IOException {
     ObjectMapper mapper = new ObjectMapper();
 
     String url = mocksObjects.mockUrl+port+"/auth/register";
@@ -77,5 +78,27 @@ class OrangePortfolioApplicationTests {
     assertEquals("201 CREATED", response.getStatusCode().toString());
 
 	}
+
+
+  @Test
+  @DisplayName("Should login an user")
+  void login() throws IOException {
+    String url = mocksObjects.mockUrl+port+"/auth/login";
+    LoginUserDTO loginUserDTO = mocksObjects.mockLoginUserDTO;
+
+    ResponseEntity<String> response = testRestTemplate.postForEntity(url, loginUserDTO, String.class);
+
+    List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
+    assert cookies != null;
+    cookies = cookies.stream().filter(c -> c.startsWith("token=")).toList();
+
+    assertEquals(1, cookies.size());
+    String token = cookies.getFirst().substring(6);
+
+    assertNotNull(response);
+    assertNotNull(token);
+    assertEquals("Usuário logado com sucesso!", response.getBody());
+    assertEquals("200 OK", response.getStatusCode().toString());
+  }
 
 }
