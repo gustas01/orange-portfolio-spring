@@ -73,6 +73,13 @@ class TagsServiceTest {
     verify(mapper, times(1)).map(Optional.of(mockTag), TagDTO.class);
   }
 
+  @Test
+  @DisplayName("Should TRY to create a tag and throw an exception because of empty tagName")
+  void createFailureEmptyTagname(){
+    Exception exception = assertThrowsExactly(BadRequestRuntimeException.class, () -> tagsService.create(new CreateTagDTO(""))) ;
+
+    assertEquals(exception.getMessage(), "Campos obrigatórios estão faltando");
+  }
 
   @Test
   @DisplayName("Should set a existing tag to active true")

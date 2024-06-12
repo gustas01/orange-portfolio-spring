@@ -27,6 +27,7 @@ public class TagsService {
   }
 
   public TagDTO create(CreateTagDTO createTagDTO){
+    if (createTagDTO.getTagName() == null || createTagDTO.getTagName().isEmpty()) throw new BadRequestRuntimeException("Campos obrigatórios estão faltando");
     Optional<Tag> tag = this.tagsRepository.findOneByTagName(createTagDTO.getTagName());
     if (tag.isPresent()){
       if (tag.get().getActive())
