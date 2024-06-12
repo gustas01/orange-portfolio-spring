@@ -1,9 +1,8 @@
 package com.orange.porfolio.orange.portfolio;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
-import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
-import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
+import com.orange.porfolio.orange.portfolio.DTOs.*;
+import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +29,7 @@ import java.util.Optional;
 @AutoConfigureWebTestClient
 //@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OrangePortfolioApplicationTests {
+  String token;
 
   @LocalServerPort
   private int port;
@@ -82,7 +82,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should login an user")
-  void login() throws IOException {
+  void login() {
     String url = mocksObjects.mockUrl+port+"/auth/login";
     LoginUserDTO loginUserDTO = mocksObjects.mockLoginUserDTO;
 
@@ -100,5 +100,18 @@ class OrangePortfolioApplicationTests {
     assertEquals("Usuário logado com sucesso!", response.getBody());
     assertEquals("200 OK", response.getStatusCode().toString());
   }
+
+  @Test
+  @DisplayName("Should make a request and throw an exception due to the user not being logged in")
+  void requestFail(){
+    String url = mocksObjects.mockUrl+port+"/me/data";
+
+    ResponseEntity<StandardError> response = testRestTemplate.getForEntity(url, StandardError.class);
+
+    assertEquals("Usuário não autenticado", response.getBody().getMessage());
+    assertEquals("401 UNAUTHORIZED", response.getStatusCode().toString());
+    assertEquals(401, response.getBody().getStatus());
+  }
+
 
 }
