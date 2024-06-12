@@ -5,29 +5,27 @@ import com.orange.porfolio.orange.portfolio.DTOs.*;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
-//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class OrangePortfolioApplicationTests {
   String token;
 
@@ -48,6 +46,7 @@ class OrangePortfolioApplicationTests {
 
 	@Test
   @DisplayName("Should create an user")
+  @Order(1)
 	void register() throws IOException {
     ObjectMapper mapper = new ObjectMapper();
 
@@ -82,9 +81,10 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should login an user")
+  @Order(2)
   void login() {
-    String url = mocksObjects.mockUrl+port+"/auth/login";
     LoginUserDTO loginUserDTO = mocksObjects.mockLoginUserDTO;
+    String url = mocksObjects.mockUrl+port+"/auth/login";
 
     ResponseEntity<String> response = testRestTemplate.postForEntity(url, loginUserDTO, String.class);
 
@@ -93,10 +93,10 @@ class OrangePortfolioApplicationTests {
     cookies = cookies.stream().filter(c -> c.startsWith("token=")).toList();
 
     assertEquals(1, cookies.size());
-    String token = cookies.getFirst().substring(6);
+    this.token = cookies.getFirst().substring(6);
 
     assertNotNull(response);
-    assertNotNull(token);
+    assertNotNull(this.token);
     assertEquals("Usuário logado com sucesso!", response.getBody());
     assertEquals("200 OK", response.getStatusCode().toString());
   }
@@ -113,5 +113,25 @@ class OrangePortfolioApplicationTests {
     assertEquals(401, response.getBody().getStatus());
   }
 
+
+  @Test
+  @DisplayName("Should TRY to create a Tag and throw an exception due to permission")
+  void createTag(){
+    Tag mockTag = mocksObjects.mockTag;
+    String url = mocksObjects.mockUrl+port+"/tags";
+
+    Cookie cookie = new Cookie("token", this.token);
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token="+cookie.getValue());
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity entityWithCookies = new HttpEntity<>(mockTag, headersWithCookies);
+
+    ResponseEntity<StandardError> response = testRestTemplate.exchange(url, HttpMethod.POST, entityWithCookies, StandardError.class);
+
+    assertEquals("403 FORBIDDEN", response.getStatusCode().toString());
+    assertEquals(403, Objects.requireNonNull(response.getBody()).getStatus());
+    assertEquals("Você não tem permissão para acessar esse serviço, contate um administrador", response.getBody().getMessage());
+  }
 
 }
