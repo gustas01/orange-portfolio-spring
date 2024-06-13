@@ -24,7 +24,7 @@ public class TagsController {
   @PostMapping
   @PreAuthorize("hasAuthority('admin')")
   public ResponseEntity<TagDTO> create(@RequestBody @Valid CreateTagDTO createTagDTO){
-    return ResponseEntity.ok(this.tagsService.create(createTagDTO));
+    return new ResponseEntity<>(this.tagsService.create(createTagDTO), HttpStatus.CREATED);
   }
 
   @GetMapping

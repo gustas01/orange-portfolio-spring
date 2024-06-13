@@ -5,15 +5,17 @@ import com.orange.porfolio.orange.portfolio.DTOs.*;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,8 +28,10 @@ import java.util.Optional;
 @AutoConfigureWebTestClient
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Profile("test")
 class OrangePortfolioApplicationTests {
-  String token;
+  String userToken;
+  String adminToken;
 
   @LocalServerPort
   private int port;
@@ -38,10 +42,25 @@ class OrangePortfolioApplicationTests {
   @Autowired
   private UsersRepository userRepository;
 
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
+
   TestUtilsMocks mocksObjects;
   @BeforeEach
   void setup(){
     mocksObjects = new TestUtilsMocks();
+  }
+
+  @BeforeAll
+//  @Sql(scripts = "./data.sql", config = @SqlConfig(encoding = "utf-8"))
+  void seed(){
+    String passwordAdmin = passwordEncoder.encode("12345678Aa!");
+    jdbcTemplate.execute("INSERT INTO roles (id, name) VALUES (2, 'admin')");
+    jdbcTemplate.update("INSERT INTO users (id, email, first_name, last_name, password, google, avatar_url) VALUES ('68665ad3-e29a-4491-ae33-33a340813563', 'admin@admin.com', 'Admin', 'User', ?, false, null)", (passwordAdmin));
+    jdbcTemplate.execute("INSERT INTO users_roles (users_id, roles_id) VALUES ('68665ad3-e29a-4491-ae33-33a340813563', 2);");
   }
 
 	@Test
@@ -93,10 +112,31 @@ class OrangePortfolioApplicationTests {
     cookies = cookies.stream().filter(c -> c.startsWith("token=")).toList();
 
     assertEquals(1, cookies.size());
-    this.token = cookies.getFirst().substring(6);
+    this.userToken = cookies.getFirst().substring(6);
 
     assertNotNull(response);
-    assertNotNull(this.token);
+    assertNotNull(this.userToken);
+    assertEquals("Usuário logado com sucesso!", response.getBody());
+    assertEquals("200 OK", response.getStatusCode().toString());
+  }
+
+  @Test
+  @DisplayName("Should login an user as Admin")
+  @Order(3)
+  void loginAsAdmin() {
+    String url = mocksObjects.mockUrl+port+"/auth/login";
+    LoginUserDTO loginAdminDTO = new LoginUserDTO("admin@admin.com", "12345678Aa!");
+    ResponseEntity<String> response = testRestTemplate.postForEntity(url, loginAdminDTO, String.class);
+
+    List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
+    assert cookies != null;
+    cookies = cookies.stream().filter(c -> c.startsWith("token=")).toList();
+
+    assertEquals(1, cookies.size());
+    this.adminToken = cookies.getFirst().substring(6);
+
+    assertNotNull(response);
+    assertNotNull(this.adminToken);
     assertEquals("Usuário logado com sucesso!", response.getBody());
     assertEquals("200 OK", response.getStatusCode().toString());
   }
@@ -116,16 +156,15 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should TRY to create a Tag and throw an exception due to permission")
-  void createTag(){
+  void createTagFailure(){
     Tag mockTag = mocksObjects.mockTag;
     String url = mocksObjects.mockUrl+port+"/tags";
 
-    Cookie cookie = new Cookie("token", this.token);
     HttpHeaders headersWithCookies = new HttpHeaders();
-    headersWithCookies.set(HttpHeaders.COOKIE, "token="+cookie.getValue());
+    headersWithCookies.set(HttpHeaders.COOKIE, "token="+userToken);
     headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
 
-    HttpEntity entityWithCookies = new HttpEntity<>(mockTag, headersWithCookies);
+    HttpEntity<Tag> entityWithCookies = new HttpEntity<>(mockTag, headersWithCookies);
 
     ResponseEntity<StandardError> response = testRestTemplate.exchange(url, HttpMethod.POST, entityWithCookies, StandardError.class);
 
@@ -134,4 +173,22 @@ class OrangePortfolioApplicationTests {
     assertEquals("Você não tem permissão para acessar esse serviço, contate um administrador", response.getBody().getMessage());
   }
 
+
+  @Test
+  @DisplayName("Should create a Tag logged as admin")
+  void createTagAsAdmin(){
+    Tag mockTag = mocksObjects.mockTag;
+    String url = mocksObjects.mockUrl+port+"/tags";
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token="+adminToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<Tag> entityWithCookies = new HttpEntity<>(mockTag, headersWithCookies);
+
+    ResponseEntity<TagDTO> response = testRestTemplate.exchange(url, HttpMethod.POST, entityWithCookies, TagDTO.class);
+
+    assertEquals("201 CREATED", response.getStatusCode().toString());
+    assertEquals(mockTag.getTagName(), Objects.requireNonNull(response.getBody()).getTagName());
+  }
 }
