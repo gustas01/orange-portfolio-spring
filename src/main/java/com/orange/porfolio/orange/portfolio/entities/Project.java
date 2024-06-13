@@ -40,7 +40,6 @@ public class Project {
 
   @ManyToOne
   @Setter
-  @JsonIgnore
   private User author;
 
   @ManyToMany

@@ -20,5 +20,5 @@ public class UserDTO {
   private String lastName;
   private String email;
   private String avatarUrl;
-  private List<Project> projects = new ArrayList<>();
+  private List<ProjectDTO> projects = new ArrayList<>();
 }

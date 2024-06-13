@@ -1,5 +1,6 @@
 package com.orange.porfolio.orange.portfolio.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,18 +33,22 @@ public class User {
 
   @Column(nullable = false)
   @Setter
+  @JsonIgnore
   private String password;
 
   @Setter
   private String avatarUrl;
 
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "author")
+  @JsonIgnore
   private List<Project> projects = new ArrayList<>();
 
   @ManyToMany
+  @JsonIgnore
   private Collection<Role> roles = new HashSet<>();
 
   @Column(nullable = false)
   @Setter
+  @JsonIgnore
   private Boolean google = false;
 }
