@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orange.porfolio.orange.portfolio.DTOs.*;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
+import com.orange.porfolio.orange.portfolio.repositories.TagsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ class OrangePortfolioApplicationTests {
 
   @Autowired
   private UsersRepository userRepository;
+
+  @Autowired
+  private TagsRepository tagsRepository;
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -143,6 +147,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should make a request and throw an exception due to the user not being logged in")
+  @Order(4)
   void requestFail(){
     String url = mocksObjects.mockUrl+port+"/me/data";
 
@@ -156,6 +161,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should TRY to create a Tag and throw an exception due to permission")
+  @Order(4)
   void createTagFailure(){
     Tag mockTag = mocksObjects.mockTag;
     String url = mocksObjects.mockUrl+port+"/tags";
@@ -176,19 +182,72 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should create a Tag logged as admin")
+  @Order(4)
   void createTagAsAdmin(){
-    Tag mockTag = mocksObjects.mockTag;
+    CreateTagDTO mockCreateTagDTO = mocksObjects.mockCreateTagDTO;
+    CreateTagDTO createTagDTO2 = mocksObjects.mockCreateTagDTO2;
     String url = mocksObjects.mockUrl+port+"/tags";
 
     HttpHeaders headersWithCookies = new HttpHeaders();
     headersWithCookies.set(HttpHeaders.COOKIE, "token="+adminToken);
     headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
 
-    HttpEntity<Tag> entityWithCookies = new HttpEntity<>(mockTag, headersWithCookies);
+    HttpEntity<CreateTagDTO> entityWithCookies = new HttpEntity<>(mockCreateTagDTO, headersWithCookies);
+    HttpEntity<CreateTagDTO> entityWithCookies2 = new HttpEntity<>(createTagDTO2, headersWithCookies);
 
-    ResponseEntity<TagDTO> response = testRestTemplate.exchange(url, HttpMethod.POST, entityWithCookies, TagDTO.class);
+    ResponseEntity<TagDTO> response = testRestTemplate.postForEntity(url, entityWithCookies, TagDTO.class);
+    ResponseEntity<TagDTO> response2 = testRestTemplate.postForEntity(url, entityWithCookies2, TagDTO.class);
 
     assertEquals("201 CREATED", response.getStatusCode().toString());
-    assertEquals(mockTag.getTagName(), Objects.requireNonNull(response.getBody()).getTagName());
+    assertEquals(mockCreateTagDTO.getTagName(), Objects.requireNonNull(response.getBody()).getTagName());
+    assertEquals("201 CREATED", response2.getStatusCode().toString());
+    assertEquals(createTagDTO2.getTagName(), Objects.requireNonNull(response2.getBody()).getTagName());
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to update a Tag and throw an exception due to permission")
+  @Order(5)
+  void updateTagFailure(){
+    String url = mocksObjects.mockUrl+port+"/tags/"+2;
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token="+userToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    CreateTagDTO updateDataTag = new CreateTagDTO("frontend editado");
+
+    HttpEntity<CreateTagDTO> entityWithCookies = new HttpEntity<>(updateDataTag, headersWithCookies);
+
+    ResponseEntity<StandardError> response = testRestTemplate.exchange(url, HttpMethod.PUT, entityWithCookies, StandardError.class);
+
+    assertEquals("403 FORBIDDEN", response.getStatusCode().toString());
+    assertEquals(403, Objects.requireNonNull(response.getBody()).getStatus());
+    assertEquals("Você não tem permissão para acessar esse serviço, contate um administrador", response.getBody().getMessage());
+  }
+
+
+  @Test
+  @DisplayName("Should update a Tag logged as admin")
+  @Order(5)
+  void updateTagAsAdmin(){
+    String url = mocksObjects.mockUrl+port+"/tags/"+2;
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token="+adminToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    CreateTagDTO updateDataTag = new CreateTagDTO("frontend editado");
+
+    HttpEntity<CreateTagDTO> entityWithCookies2 = new HttpEntity<>(updateDataTag, headersWithCookies);
+    List<Tag> tags = tagsRepository.findAll();
+
+    ResponseEntity<String> response = testRestTemplate.exchange(url, HttpMethod.PUT, entityWithCookies2, String.class);
+
+    Tag updatedTag = tagsRepository.findAll().stream().filter(tag -> Objects.equals(tag.getId(), 2)).toList().getFirst();
+
+    assertEquals("200 OK", response.getStatusCode().toString());
+    assertEquals("Tag atualizada com sucesso!", Objects.requireNonNull(response.getBody()));
+    assertEquals(updateDataTag.getTagName(), updatedTag.getTagName());
   }
 }
