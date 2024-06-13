@@ -59,7 +59,6 @@ class OrangePortfolioApplicationTests {
   }
 
   @BeforeAll
-//  @Sql(scripts = "./data.sql", config = @SqlConfig(encoding = "utf-8"))
   void seed(){
     String passwordAdmin = passwordEncoder.encode("12345678Aa!");
     jdbcTemplate.execute("INSERT INTO roles (id, name) VALUES (2, 'admin')");
@@ -126,7 +125,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should login an user as Admin")
-  @Order(3)
+  @Order(2)
   void loginAsAdmin() {
     String url = mocksObjects.mockUrl+port+"/auth/login";
     LoginUserDTO loginAdminDTO = new LoginUserDTO("admin@admin.com", "12345678Aa!");
@@ -147,7 +146,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should make a request and throw an exception due to the user not being logged in")
-  @Order(4)
+  @Order(3)
   void requestFail(){
     String url = mocksObjects.mockUrl+port+"/me/data";
 
@@ -161,7 +160,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should TRY to create a Tag and throw an exception due to permission")
-  @Order(4)
+  @Order(3)
   void createTagFailure(){
     Tag mockTag = mocksObjects.mockTag;
     String url = mocksObjects.mockUrl+port+"/tags";
@@ -182,7 +181,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should create a Tag logged as admin")
-  @Order(4)
+  @Order(3)
   void createTagAsAdmin(){
     CreateTagDTO mockCreateTagDTO = mocksObjects.mockCreateTagDTO;
     CreateTagDTO createTagDTO2 = mocksObjects.mockCreateTagDTO2;
@@ -207,7 +206,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should TRY to update a Tag and throw an exception due to permission")
-  @Order(5)
+  @Order(4)
   void updateTagFailure(){
     String url = mocksObjects.mockUrl+port+"/tags/"+2;
 
@@ -229,7 +228,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should update a Tag logged as admin")
-  @Order(5)
+  @Order(4)
   void updateTagAsAdmin(){
     String url = mocksObjects.mockUrl+port+"/tags/"+2;
 
@@ -249,5 +248,50 @@ class OrangePortfolioApplicationTests {
     assertEquals("200 OK", response.getStatusCode().toString());
     assertEquals("Tag atualizada com sucesso!", Objects.requireNonNull(response.getBody()));
     assertEquals(updateDataTag.getTagName(), updatedTag.getTagName());
+  }
+
+
+  @Test
+  @DisplayName("Should TRY to delete a Tag and throw an exception due to permission")
+  @Order(5)
+  void deleteTagFailure(){
+    String url = mocksObjects.mockUrl+port+"/tags/"+2;
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token="+userToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<CreateTagDTO> entityWithCookies = new HttpEntity<>(headersWithCookies);
+
+    ResponseEntity<StandardError> response = testRestTemplate.exchange(url, HttpMethod.DELETE, entityWithCookies, StandardError.class);
+
+    assertEquals("403 FORBIDDEN", response.getStatusCode().toString());
+    assertEquals(403, Objects.requireNonNull(response.getBody()).getStatus());
+    assertEquals("Você não tem permissão para acessar esse serviço, contate um administrador", response.getBody().getMessage());
+  }
+
+
+  @Test
+  @DisplayName("Should delete a Tag logged as admin")
+  @Order(5)
+  void deleteTagAsAdmin(){
+    String url = mocksObjects.mockUrl+port+"/tags/"+2;
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token="+adminToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<CreateTagDTO> entityWithCookies2 = new HttpEntity<>(headersWithCookies);
+
+    ResponseEntity<String> response = testRestTemplate.exchange(url, HttpMethod.DELETE, entityWithCookies2, String.class);
+
+    Tag updatedTag = tagsRepository.findAll().stream().filter(tag -> Objects.equals(tag.getId(), 2)).toList().getFirst();
+    List<Tag> tags = tagsRepository.findAll();
+    List<Tag> activeTags = tagsRepository.findAllByActive(true);
+
+    assertEquals("204 NO_CONTENT", response.getStatusCode().toString());
+    assertEquals(updatedTag.getActive(), false);
+    assertEquals(tags.size(), 2);
+    assertEquals(activeTags.size(), 1);
   }
 }
