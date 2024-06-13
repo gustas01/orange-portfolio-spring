@@ -1,5 +1,6 @@
 package com.orange.porfolio.orange.portfolio;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orange.porfolio.orange.portfolio.DTOs.*;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
@@ -90,7 +91,7 @@ class OrangePortfolioApplicationTests {
     HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, formHeaders);
 
     ResponseEntity<UserDTO> response = testRestTemplate.postForEntity(url, requestEntity, UserDTO.class);
-    Optional<User> user = userRepository.findByEmail(response.getBody().getEmail());
+    Optional<User> user = userRepository.findByEmail(Objects.requireNonNull(response.getBody()).getEmail());
 
     assertNotNull(user);
     assertEquals(mockCreateUserDTO.getFirstName(), user.get().getFirstName());
@@ -152,7 +153,7 @@ class OrangePortfolioApplicationTests {
 
     ResponseEntity<StandardError> response = testRestTemplate.getForEntity(url, StandardError.class);
 
-    assertEquals("Usuário não autenticado", response.getBody().getMessage());
+    assertEquals("Usuário não autenticado", Objects.requireNonNull(response.getBody()).getMessage());
     assertEquals("401 UNAUTHORIZED", response.getStatusCode().toString());
     assertEquals(401, response.getBody().getStatus());
   }
@@ -281,9 +282,9 @@ class OrangePortfolioApplicationTests {
     headersWithCookies.set(HttpHeaders.COOKIE, "token="+adminToken);
     headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
 
-    HttpEntity<CreateTagDTO> entityWithCookies2 = new HttpEntity<>(headersWithCookies);
+    HttpEntity<Object> entityWithCookies = new HttpEntity<>(headersWithCookies);
 
-    ResponseEntity<String> response = testRestTemplate.exchange(url, HttpMethod.DELETE, entityWithCookies2, String.class);
+    ResponseEntity<String> response = testRestTemplate.exchange(url, HttpMethod.DELETE, entityWithCookies, String.class);
 
     Tag updatedTag = tagsRepository.findAll().stream().filter(tag -> Objects.equals(tag.getId(), 2)).toList().getFirst();
     List<Tag> tags = tagsRepository.findAll();
@@ -307,13 +308,43 @@ class OrangePortfolioApplicationTests {
     headersWithCookies.set(HttpHeaders.COOKIE, "token="+userToken);
     headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
 
-    HttpEntity<CreateTagDTO> entityWithCookies = new HttpEntity<>(headersWithCookies);
+    HttpEntity<Object> entityWithCookies = new HttpEntity<>(headersWithCookies);
 
     ResponseEntity<UserDTO> response = testRestTemplate.exchange(url, HttpMethod.GET, entityWithCookies, UserDTO.class);
 
     assertEquals("200 OK", response.getStatusCode().toString());
-    assertEquals(mockCreateUserDTO.getEmail(), response.getBody().getEmail());
+    assertEquals(mockCreateUserDTO.getEmail(), Objects.requireNonNull(response.getBody()).getEmail());
     assertEquals(mockCreateUserDTO.getFirstName(), response.getBody().getFirstName());
     assertEquals(mockCreateUserDTO.getLastName(), response.getBody().getLastName());
+  }
+
+
+  @Test
+  @DisplayName("Should update the logged user")
+  @Order(4)
+  void userUpdate() throws JsonProcessingException {
+    UpdateUserDTO mockUpdateUserDTO = new UpdateUserDTO("gustavo editado", "lima", "gustavo@email.com", "12345678Aa!");
+
+    ObjectMapper mapper = new ObjectMapper();
+
+    String url = mocksObjects.mockUrl+port+"/users";
+
+    HttpHeaders dataHeaders = new HttpHeaders();
+    HttpHeaders formHeaders = new HttpHeaders();
+    dataHeaders.setContentType(MediaType.APPLICATION_JSON);
+    formHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+    formHeaders.set(HttpHeaders.COOKIE, "token="+userToken);
+
+    MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+    HttpEntity<MultiValueMap<String, Object>> entityWithCookies = new HttpEntity<>(formData, formHeaders);
+
+    formData.add("data", new HttpEntity<>(mapper.writeValueAsString(mockUpdateUserDTO), dataHeaders) );
+
+    ResponseEntity<UserDTO> response = testRestTemplate.exchange(url, HttpMethod.PUT, entityWithCookies, UserDTO.class);
+
+    assertEquals("200 OK", response.getStatusCode().toString());
+    assertEquals(mockUpdateUserDTO.getEmail(), Objects.requireNonNull(response.getBody()).getEmail());
+    assertEquals(mockUpdateUserDTO.getFirstName(), response.getBody().getFirstName());
+    assertEquals(mockUpdateUserDTO.getLastName(), response.getBody().getLastName());
   }
 }
