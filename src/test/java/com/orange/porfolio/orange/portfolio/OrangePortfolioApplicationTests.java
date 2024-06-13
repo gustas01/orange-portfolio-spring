@@ -376,4 +376,41 @@ class OrangePortfolioApplicationTests {
     assertEquals(createUserDTO.getFirstName(), response.getBody().getFirstName());
     assertEquals(createUserDTO.getLastName(), response.getBody().getLastName());
   }
+
+
+  @Test
+  @DisplayName("Should create a project")
+  @Order(3)
+  void createProject() throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+
+    String url = mocksObjects.mockUrl + port + "/projects";
+    CreateProjectDTO mockCreateProjectDTO = mocksObjects.mockCreateProjectDTO;
+//    MockMultipartFile mockMultipartFile = mocksObjects.mockMultipartFileImage;
+    mockCreateProjectDTO.getTags().add("backend");
+
+    HttpHeaders dataHeaders = new HttpHeaders();
+//    HttpHeaders fileHeaders = new HttpHeaders();
+    HttpHeaders formHeaders = new HttpHeaders();
+    dataHeaders.setContentType(MediaType.APPLICATION_JSON);
+//    fileHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    formHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+    formHeaders.set(HttpHeaders.COOKIE, "token=" + userToken);
+
+    MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+    formData.add("data", new HttpEntity<>(mapper.writeValueAsString(mockCreateProjectDTO), dataHeaders));
+//    formData.add("image", new HttpEntity<>(mockMultipartFile.getBytes(), fileHeaders));
+
+    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, formHeaders);
+
+    ResponseEntity<ProjectDTO> response = testRestTemplate.postForEntity(url, requestEntity, ProjectDTO.class);
+//    Optional<ProjectDTO> projectDTO = userRepository.findByEmail(Objects.requireNonNull(response.getBody()).getEmail());
+
+    assertNotNull(response.getBody());
+    assertEquals("201 CREATED", response.getStatusCode().toString());
+    assertEquals(mockCreateProjectDTO.getTitle(), response.getBody().getTitle());
+    assertEquals(mockCreateProjectDTO.getDescription(), response.getBody().getDescription());
+    assertEquals(mockCreateProjectDTO.getUrl(), response.getBody().getUrl());
+
+  }
 }
