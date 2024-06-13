@@ -294,4 +294,26 @@ class OrangePortfolioApplicationTests {
     assertEquals(tags.size(), 2);
     assertEquals(activeTags.size(), 1);
   }
+
+  @Test
+  @DisplayName("Should return the data of the logged user")
+  @Order(3)
+  void userData(){
+    CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
+
+    String url = mocksObjects.mockUrl+port+"/users/me/data";
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token="+userToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<CreateTagDTO> entityWithCookies = new HttpEntity<>(headersWithCookies);
+
+    ResponseEntity<UserDTO> response = testRestTemplate.exchange(url, HttpMethod.GET, entityWithCookies, UserDTO.class);
+
+    assertEquals("200 OK", response.getStatusCode().toString());
+    assertEquals(mockCreateUserDTO.getEmail(), response.getBody().getEmail());
+    assertEquals(mockCreateUserDTO.getFirstName(), response.getBody().getFirstName());
+    assertEquals(mockCreateUserDTO.getLastName(), response.getBody().getLastName());
+  }
 }
