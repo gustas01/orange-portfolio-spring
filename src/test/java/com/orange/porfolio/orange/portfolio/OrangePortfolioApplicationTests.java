@@ -201,7 +201,7 @@ class OrangePortfolioApplicationTests {
   @Order(3)
   void createTagAsAdmin() {
     CreateTagDTO mockCreateTagDTO = mocksObjects.mockCreateTagDTO;
-    CreateTagDTO createTagDTO2 = mocksObjects.mockCreateTagDTO2;
+    CreateTagDTO mockCreateTagDTO2 = mocksObjects.mockCreateTagDTO2;
     String url = mocksObjects.mockUrl + port + "/tags";
 
     HttpHeaders headersWithCookies = new HttpHeaders();
@@ -209,7 +209,7 @@ class OrangePortfolioApplicationTests {
     headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
 
     HttpEntity<CreateTagDTO> entityWithCookies = new HttpEntity<>(mockCreateTagDTO, headersWithCookies);
-    HttpEntity<CreateTagDTO> entityWithCookies2 = new HttpEntity<>(createTagDTO2, headersWithCookies);
+    HttpEntity<CreateTagDTO> entityWithCookies2 = new HttpEntity<>(mockCreateTagDTO2, headersWithCookies);
 
     ResponseEntity<TagDTO> response = testRestTemplate.postForEntity(url, entityWithCookies, TagDTO.class);
     ResponseEntity<TagDTO> response2 = testRestTemplate.postForEntity(url, entityWithCookies2, TagDTO.class);
@@ -217,7 +217,7 @@ class OrangePortfolioApplicationTests {
     assertEquals("201 CREATED", response.getStatusCode().toString());
     assertEquals(mockCreateTagDTO.getTagName(), Objects.requireNonNull(response.getBody()).getTagName());
     assertEquals("201 CREATED", response2.getStatusCode().toString());
-    assertEquals(createTagDTO2.getTagName(), Objects.requireNonNull(response2.getBody()).getTagName());
+    assertEquals(mockCreateTagDTO2.getTagName(), Objects.requireNonNull(response2.getBody()).getTagName());
   }
 
 
@@ -270,7 +270,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should TRY to delete a Tag and throw an exception due to permission")
-  @Order(5)
+  @Order(6)
   void deleteTagFailure() {
     String url = mocksObjects.mockUrl + port + "/tags/" + 2;
 
@@ -290,7 +290,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should delete a Tag logged as admin")
-  @Order(5)
+  @Order(6)
   void deleteTagAsAdmin() {
     String url = mocksObjects.mockUrl + port + "/tags/" + 2;
 
@@ -337,7 +337,7 @@ class OrangePortfolioApplicationTests {
 
   @Test
   @DisplayName("Should update the logged user")
-  @Order(4)
+  @Order(5)
   void userUpdate() throws JsonProcessingException {
     UpdateUserDTO mockUpdateUserDTO = new UpdateUserDTO("gustavo editado", "lima", "gustavo@email.com", "12345678Aa!");
 
@@ -399,8 +399,10 @@ class OrangePortfolioApplicationTests {
 
     String url = mocksObjects.mockUrl + port + "/projects";
     CreateProjectDTO mockCreateProjectDTO = mocksObjects.mockCreateProjectDTO;
+    CreateProjectDTO mockCreateProjectDTO2 = mocksObjects.mockCreateProjectDTO2;
 //    MockMultipartFile mockMultipartFile = mocksObjects.mockMultipartFileImage;
     mockCreateProjectDTO.getTags().add("backend");
+    mockCreateProjectDTO2.getTags().add("backend");
 
     HttpHeaders dataHeaders = new HttpHeaders();
 //    HttpHeaders fileHeaders = new HttpHeaders();
@@ -411,12 +413,16 @@ class OrangePortfolioApplicationTests {
     formHeaders.set(HttpHeaders.COOKIE, "token=" + userToken);
 
     MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+    MultiValueMap<String, Object> formData2 = new LinkedMultiValueMap<>();
     formData.add("data", new HttpEntity<>(mapper.writeValueAsString(mockCreateProjectDTO), dataHeaders));
+    formData2.add("data", new HttpEntity<>(mapper.writeValueAsString(mockCreateProjectDTO2), dataHeaders));
 //    formData.add("image", new HttpEntity<>(mockMultipartFile.getBytes(), fileHeaders));
 
     HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, formHeaders);
+    HttpEntity<MultiValueMap<String, Object>> requestEntity2 = new HttpEntity<>(formData2, formHeaders);
 
     ResponseEntity<ProjectDTO> response = testRestTemplate.postForEntity(url, requestEntity, ProjectDTO.class);
+    ResponseEntity<ProjectDTO> response2 = testRestTemplate.postForEntity(url, requestEntity2, ProjectDTO.class);
 //    Optional<ProjectDTO> projectDTO = userRepository.findByEmail(Objects.requireNonNull(response.getBody()).getEmail());
 
     assertNotNull(response.getBody());
@@ -424,6 +430,12 @@ class OrangePortfolioApplicationTests {
     assertEquals(mockCreateProjectDTO.getTitle(), response.getBody().getTitle());
     assertEquals(mockCreateProjectDTO.getDescription(), response.getBody().getDescription());
     assertEquals(mockCreateProjectDTO.getUrl(), response.getBody().getUrl());
+
+    assertNotNull(response2.getBody());
+    assertEquals("201 CREATED", response2.getStatusCode().toString());
+    assertEquals(mockCreateProjectDTO2.getTitle(), response2.getBody().getTitle());
+    assertEquals(mockCreateProjectDTO2.getDescription(), response2.getBody().getDescription());
+    assertEquals(mockCreateProjectDTO2.getUrl(), response2.getBody().getUrl());
 
   }
 
@@ -446,8 +458,8 @@ class OrangePortfolioApplicationTests {
 
     assertNotNull(response.getBody());
     assertEquals("200 OK", response.getStatusCode().toString());
-    assertEquals(1, response.getBody().get().count());
-    assertEquals(1, response.getBody().getTotalElements());
+    assertEquals(2, response.getBody().get().count());
+    assertEquals(2, response.getBody().getTotalElements());
     assertEquals(1, response.getBody().getTotalPages());
     assertEquals("UNSORTED", response.getBody().getSort().toString());
     assertEquals(PageRequest.class, response.getBody().getPageable().getClass());
@@ -477,6 +489,44 @@ class OrangePortfolioApplicationTests {
     assertEquals(mockCreateProjectDTO.getTitle(), response.getBody().getTitle());
     assertEquals(mockCreateProjectDTO.getDescription(), response.getBody().getDescription());
     assertEquals(mockCreateProjectDTO.getUrl(), response.getBody().getUrl());
+
+  }
+
+
+  @Test
+  @DisplayName("Should update a project")
+  @Order(5)
+  void updateProject() throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+
+    String url = mocksObjects.mockUrl + port + "/projects/" + projectsRepository.findAll().getFirst().getId();
+
+    CreateProjectDTO mockCreateProjectDTO2 = mocksObjects.mockCreateProjectDTO2;
+//    MockMultipartFile mockMultipartFile = mocksObjects.mockMultipartFileImage;
+    mockCreateProjectDTO2.getTags().add("backend");
+
+    HttpHeaders dataHeaders = new HttpHeaders();
+//    HttpHeaders fileHeaders = new HttpHeaders();
+    HttpHeaders formHeaders = new HttpHeaders();
+    dataHeaders.setContentType(MediaType.APPLICATION_JSON);
+//    fileHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    formHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+    formHeaders.set(HttpHeaders.COOKIE, "token=" + userToken);
+
+    MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+    formData.add("data", new HttpEntity<>(mapper.writeValueAsString(mockCreateProjectDTO2), dataHeaders));
+//    formData.add("image", new HttpEntity<>(mockMultipartFile.getBytes(), fileHeaders));
+
+    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, formHeaders);
+
+    ResponseEntity<ProjectDTO> response = testRestTemplate.exchange(url, HttpMethod.PUT, requestEntity, ProjectDTO.class);
+//    Optional<ProjectDTO> projectDTO = userRepository.findByEmail(Objects.requireNonNull(response.getBody()).getEmail());
+
+    assertNotNull(response.getBody());
+    assertEquals("200 OK", response.getStatusCode().toString());
+    assertEquals(mockCreateProjectDTO2.getTitle(), response.getBody().getTitle());
+    assertEquals(mockCreateProjectDTO2.getDescription(), response.getBody().getDescription());
+    assertEquals(mockCreateProjectDTO2.getUrl(), response.getBody().getUrl());
 
   }
 }
