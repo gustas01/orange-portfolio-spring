@@ -3,17 +3,24 @@ package com.orange.porfolio.orange.portfolio;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orange.porfolio.orange.portfolio.DTOs.*;
+import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
 import com.orange.porfolio.orange.portfolio.repositories.TagsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import org.junit.jupiter.api.*;
+import org.modelmapper.TypeToken;
+import org.modelmapper.internal.bytebuddy.description.method.MethodDescription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
@@ -24,6 +31,8 @@ import org.springframework.util.MultiValueMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -411,6 +420,32 @@ class OrangePortfolioApplicationTests {
     assertEquals(mockCreateProjectDTO.getTitle(), response.getBody().getTitle());
     assertEquals(mockCreateProjectDTO.getDescription(), response.getBody().getDescription());
     assertEquals(mockCreateProjectDTO.getUrl(), response.getBody().getUrl());
+
+  }
+
+
+  @Test
+  @DisplayName("Should list the project that aren't from the logged user")
+  @Order(4)
+  void discoveryProjects() {
+
+    String url = mocksObjects.mockUrl + port + "/projects/discovery";
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token=" + adminToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headersWithCookies);
+
+    ResponseEntity<CustomPageImpl<Project>> response = testRestTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<CustomPageImpl<Project>>() {});
+
+    assertNotNull(response.getBody());
+    assertEquals("200 OK", response.getStatusCode().toString());
+    assertEquals(1, response.getBody().get().count());
+    assertEquals(1, response.getBody().getTotalElements());
+    assertEquals(1, response.getBody().getTotalPages());
+    assertEquals("UNSORTED", response.getBody().getSort().toString());
+    assertEquals(PageRequest.class, response.getBody().getPageable().getClass());
 
   }
 }
