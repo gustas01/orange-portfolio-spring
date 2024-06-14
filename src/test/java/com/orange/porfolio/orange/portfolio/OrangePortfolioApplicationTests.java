@@ -6,6 +6,7 @@ import com.orange.porfolio.orange.portfolio.DTOs.*;
 import com.orange.porfolio.orange.portfolio.entities.Project;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
 import com.orange.porfolio.orange.portfolio.entities.User;
+import com.orange.porfolio.orange.portfolio.repositories.ProjectsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.TagsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import org.junit.jupiter.api.*;
@@ -57,6 +58,9 @@ class OrangePortfolioApplicationTests {
 
   @Autowired
   private TagsRepository tagsRepository;
+
+  @Autowired
+  private ProjectsRepository projectsRepository;
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -370,7 +374,7 @@ class OrangePortfolioApplicationTests {
 
     assertTrue(user.isPresent());
 
-    String url = mocksObjects.mockUrl + port + "/users/"+user.get().getId();
+    String url = mocksObjects.mockUrl + port + "/users/" + user.get().getId();
 
     HttpHeaders headersWithCookies = new HttpHeaders();
     headersWithCookies.set(HttpHeaders.COOKIE, "token=" + userToken);
@@ -437,7 +441,8 @@ class OrangePortfolioApplicationTests {
 
     HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headersWithCookies);
 
-    ResponseEntity<CustomPageImpl<Project>> response = testRestTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<CustomPageImpl<Project>>() {});
+    ResponseEntity<CustomPageImpl<Project>> response = testRestTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<CustomPageImpl<Project>>() {
+    });
 
     assertNotNull(response.getBody());
     assertEquals("200 OK", response.getStatusCode().toString());
@@ -446,6 +451,32 @@ class OrangePortfolioApplicationTests {
     assertEquals(1, response.getBody().getTotalPages());
     assertEquals("UNSORTED", response.getBody().getSort().toString());
     assertEquals(PageRequest.class, response.getBody().getPageable().getClass());
+
+  }
+
+
+  @Test
+  @DisplayName("Should return one Project by Id")
+  @Order(4)
+  void finOneById() {
+    CreateProjectDTO mockCreateProjectDTO = mocksObjects.mockCreateProjectDTO;
+    CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
+
+    String url = mocksObjects.mockUrl + port + "/projects/" + projectsRepository.findAll().getFirst().getId();
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token=" + userToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headersWithCookies);
+
+    ResponseEntity<Project> response = testRestTemplate.exchange(url, HttpMethod.GET, requestEntity, Project.class);
+
+    assertNotNull(response.getBody());
+    assertEquals("200 OK", response.getStatusCode().toString());
+    assertEquals(mockCreateProjectDTO.getTitle(), response.getBody().getTitle());
+    assertEquals(mockCreateProjectDTO.getDescription(), response.getBody().getDescription());
+    assertEquals(mockCreateProjectDTO.getUrl(), response.getBody().getUrl());
 
   }
 }
