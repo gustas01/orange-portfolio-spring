@@ -10,8 +10,6 @@ import com.orange.porfolio.orange.portfolio.repositories.ProjectsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.TagsRepository;
 import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import org.junit.jupiter.api.*;
-import org.modelmapper.TypeToken;
-import org.modelmapper.internal.bytebuddy.description.method.MethodDescription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,8 +17,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,11 +28,7 @@ import org.springframework.util.MultiValueMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
@@ -472,7 +464,6 @@ class OrangePortfolioApplicationTests {
   @Order(4)
   void finOneById() {
     CreateProjectDTO mockCreateProjectDTO = mocksObjects.mockCreateProjectDTO;
-    CreateUserDTO mockCreateUserDTO = mocksObjects.mockCreateUserDTO;
 
     String url = mocksObjects.mockUrl + port + "/projects/" + projectsRepository.findAll().getFirst().getId();
 
@@ -528,5 +519,26 @@ class OrangePortfolioApplicationTests {
     assertEquals(mockCreateProjectDTO2.getDescription(), response.getBody().getDescription());
     assertEquals(mockCreateProjectDTO2.getUrl(), response.getBody().getUrl());
 
+  }
+
+
+  @Test
+  @DisplayName("Should delete one Project by Id")
+  @Order(6)
+  void deleteProject() {
+    UUID projectId = projectsRepository.findAll().getFirst().getId();
+    String url = mocksObjects.mockUrl + port + "/projects/" + projectId;
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token=" + userToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headersWithCookies);
+
+    ResponseEntity<Project> response = testRestTemplate.exchange(url, HttpMethod.DELETE, requestEntity, Project.class);
+
+
+    assertEquals("204 NO_CONTENT", response.getStatusCode().toString());
+    assertTrue(projectsRepository.findById(projectId).isEmpty());
   }
 }
