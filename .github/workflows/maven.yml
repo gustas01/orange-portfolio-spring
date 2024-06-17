@@ -25,14 +25,16 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven
-      env:
-        spring.datasource.url: ${{secrets.SPRING_DATASOURCE_URL}}
-        spring.jpa.database-platform: ${{secrets.SPRING_JPA_DATABASE_PLATFORM}}
-        api.security.token.secret: ${{secrets.API_SECURITY_TOKEN_SECRET}}
-        client_id_imgur: ${{secrets.CLIENT_ID_IMGUR}}
-        spring.security.oauth2.client.registration.google.client-id: ${{secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID}}
-        spring.security.oauth2.client.registration.google.client-secret: ${{secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET}}
+    - name: Create application-local.properties
+      run: |
+        echo "spring.datasource.url=${{ secrets.SPRING_DATASOURCE_URL }}" > src/main/resources/application-local.properties
+        echo "spring.jpa.database-platform=${{ secrets.SPRING_JPA_DATABASE_PLATFORM }}" >> src/main/resources/application-local.properties
+        echo "api.security.token.secret=${{ secrets.API_SECURITY_TOKEN_SECRET }}" >> src/main/resources/application-local.properties
+        echo "client_id_imgur=${{ secrets.CLIENT_ID_IMGUR }}" >> src/main/resources/application-local.properties
+        echo "spring.security.oauth2.client.registration.google.client-id=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID }}" >> src/main/resources/application-local.properties
+        echo "spring.security.oauth2.client.registration.google.client-secret=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET }}" >> src/main/resources/application-local.properties
+      
+    - name: Build
       run: mvn clean install
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
