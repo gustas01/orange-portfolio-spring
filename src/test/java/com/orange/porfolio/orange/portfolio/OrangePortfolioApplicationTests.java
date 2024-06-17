@@ -39,7 +39,7 @@ import java.util.*;
 @ActiveProfiles("test")
 //colocando o application-test.properties por último para ele substituir as chaves repetidas do application-local.properties, como a spring.datasource.url
 @TestPropertySource(locations = {
-        "classpath:application.properties",
+        "classpath:application-local.properties",
         "classpath:application-test.properties"
 })
 class OrangePortfolioApplicationTests {
