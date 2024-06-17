@@ -32,7 +32,8 @@ Backend do Orange Portfolio similir ao feito em NestJS na 4ª edição do hackat
 
 
 ## 👨‍💻 Como executar localmente
-1º passo - Depois de clonar o projeto, crie um arquivo chamado `.env` na raiz da aplicação e o preencha com as informações que se pede:
+OBS: Tanto o Java quanto o Maven instalados e suas variáveis de ambiente configuradas no local em que será executada a aplicação. <br><br>
+1º passo - Depois de clonar o projeto, crie um arquivo chamado `application-local.properties` dentro de `src/main/resources` e o preencha com as informações que se pede:
 ```bash
 # A url de conexão com o seu banco de dados.
 spring.datasource.url=
@@ -52,3 +53,9 @@ spring.security.oauth2.client.registration.google.client-id=
 # Secret key encontrada no mesmo lugar do ID, e para o mesmo propósito
 spring.security.oauth2.client.registration.google.client-secret=
 ```
+2º passo - No terminal aberto na raiz do projeto, execute o comando `mvn dependency:resolve` para baixar as dependências e compilar a aplicação.<br><br>
+3º passo - No terminal aberto na raiz do projeto, execute o comando `mvn spring-boot:run` para executar a aplicação.
+
+
+## 👨‍💻 Como executar os testes localmente
+No terminal aberto na raiz do projeto, execute o comando `mvn test` para executar os testes da aplicação.
