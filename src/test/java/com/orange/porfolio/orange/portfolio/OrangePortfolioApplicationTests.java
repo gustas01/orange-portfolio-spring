@@ -22,6 +22,8 @@ import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -34,7 +36,12 @@ import java.util.*;
 @AutoConfigureWebTestClient
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Profile("test")
+@ActiveProfiles("test")
+//colocando o application-test.properties por último para ele substituir as chaves repetidas do application-local.properties, como a spring.datasource.url
+@TestPropertySource(locations = {
+        "classpath:application-local.properties",
+        "classpath:application-test.properties"
+})
 class OrangePortfolioApplicationTests {
   String userToken;
   String adminToken;
