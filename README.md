@@ -59,3 +59,7 @@ spring.security.oauth2.client.registration.google.client-secret=
 
 ## 👨‍💻 Como executar os testes localmente
 No terminal aberto na raiz do projeto, execute o comando `mvn test` para executar os testes da aplicação.
+
+
+## Gerar artefato para produção
+Para gerar o artefato para fazer o deploy da aplicação em produção, execute o comando `mvn clean install`, assim o maven vai baixar as dependências, compilar, executar os testes e gerar o artefato .jar.
