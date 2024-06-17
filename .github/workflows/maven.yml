@@ -15,6 +15,24 @@ on:
     branches: [ "main" ]
 
 jobs:
+  create-config:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Create application-local.properties
+      run: |
+        echo "spring.datasource.url=${{ secrets.SPRING_DATASOURCE_URL }}" > src/main/resources/application-local.properties
+        echo "spring.jpa.database-platform=${{ secrets.SPRING_JPA_DATABASE_PLATFORM }}" >> src/main/resources/application-local.properties
+        echo "api.security.token.secret=${{ secrets.API_SECURITY_TOKEN_SECRET }}" >> src/main/resources/application-local.properties
+        echo "client_id_imgur=${{ secrets.CLIENT_ID_IMGUR }}" >> src/main/resources/application-local.properties
+        echo "spring.security.oauth2.client.registration.google.client-id=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID }}" >> src/main/resources/application-local.properties
+        echo "spring.security.oauth2.client.registration.google.client-secret=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET }}" >> src/main/resources/application-local.properties
+    - name: Upload application-local.properties
+      uses: actions/upload-artifact@v3
+      with:
+        name: application-local.properties
+        path: src/main/resources/application-local.properties
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -25,14 +43,11 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-    - name: Create application-local.properties
-      run: |
-        echo "spring.datasource.url=${{ secrets.SPRING_DATASOURCE_URL }}" > src/main/resources/application-local.properties
-        echo "spring.jpa.database-platform=${{ secrets.SPRING_JPA_DATABASE_PLATFORM }}" >> src/main/resources/application-local.properties
-        echo "api.security.token.secret=${{ secrets.API_SECURITY_TOKEN_SECRET }}" >> src/main/resources/application-local.properties
-        echo "client_id_imgur=${{ secrets.CLIENT_ID_IMGUR }}" >> src/main/resources/application-local.properties
-        echo "spring.security.oauth2.client.registration.google.client-id=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID }}" >> src/main/resources/application-local.properties
-        echo "spring.security.oauth2.client.registration.google.client-secret=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET }}" >> src/main/resources/application-local.properties
+    - name: Download application-local.properties
+      uses: actions/download-artifact@v3
+      with:
+        name: application-local.properties
+        path: src/main/resources/
       
     - name: Build
       run: mvn clean install
@@ -48,5 +63,10 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+    - name: Download application-local.properties
+      uses: actions/download-artifact@v3
+      with:
+        name: application-local.properties
+        path: src/main/resources/
     - name: Tests with Maven
       run: mvn test
