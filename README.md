@@ -63,3 +63,8 @@ No terminal aberto na raiz do projeto, execute o comando `mvn test` para executa
 
 ## Gerar artefato para produção
 Para gerar o artefato para fazer o deploy da aplicação em produção, execute o comando `mvn clean install`, assim o maven vai baixar as dependências, compilar, executar os testes e gerar o artefato .jar.
+
+## Executar a aplicação em container
+Basta preencher as informações faltantes no arquivo `application-container.properties` igualmente feito no `application-local.properties` e subir o docker-compose com os comandos:<br>
+1º - docker-compose build <br>
+2º - docker-compose up
