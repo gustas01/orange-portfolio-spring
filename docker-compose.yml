@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: orange-portfolio-compose
+    container_name: orange-portfolio-compose
+    ports:
+      - 8080:8080
+    networks:
+      - orange
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/mydb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - postgresql
+  
+  postgresql:
+    build: 
+      dockerfile: pg-dockerfile
+      context: .
+    image: pg-compoese
+    container_name: pg-compose
+    ports:
+      - 5432:5432
+    networks:
+      - orange
+
+networks:
+  orange:
+    driver: bridge
+    
