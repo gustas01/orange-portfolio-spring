@@ -40,7 +40,7 @@ public class ProjectsService {
     this.imageUploadService = imageUploadService;
   }
 
-  public ProjectDTO create(UUID userId, CreateProjectDTO createProjectDTO, MultipartFile file){
+  public ProjectDTO create(UUID userId, CreateProjectDTO createProjectDTO, MultipartFile file) {
     User user = this.usersRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado!"));
     Project project = mapper.map(createProjectDTO, Project.class);
     project.setAuthor(user);
@@ -53,7 +53,7 @@ public class ProjectsService {
       }
     if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
 
-    if(file != null){
+    if (file != null) {
       if (!allowedMimeTypes.contains(file.getContentType()))
         throw new BadRequestRuntimeException("Tipo de arquivo não suportado. Use arquivos .JPG ou .PNG");
       ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
@@ -63,7 +63,7 @@ public class ProjectsService {
     return mapper.map(this.projectsRepository.save(project), ProjectDTO.class);
   }
 
-  public Page<Project> discovery(UUID userId, Pageable pageable){;
+  public Page<Project> discovery(UUID userId, Pageable pageable) {
     Page<Project> projects = this.projectsRepository.findAllByAuthorIdNot(userId, pageable);
     return projects;
   }
@@ -76,7 +76,7 @@ public class ProjectsService {
   }
 
   //chamar lá no userController
-  public Page<Project> findAllByAuthor(UUID userId, Pageable pageable){
+  public Page<Project> findAllByAuthor(UUID userId, Pageable pageable) {
     return this.projectsRepository.findAllByAuthorId(userId, pageable);
   }
 
@@ -84,22 +84,28 @@ public class ProjectsService {
     return this.projectsRepository.findById(id).map(p -> {
       if (!(p.getAuthor().getId().equals(userId)))
         throw new ForbiddenRuntimeException("Você não tem autorização para atualizar projeto de outro usuário!");
-      if(project.getTitle() != null) p.setTitle(project.getTitle());
-      if(project.getDescription() != null) p.setDescription(project.getDescription());
-      if(project.getUrl() != null) p.setUrl(project.getUrl());
+      if (project.getTitle() != null) p.setTitle(project.getTitle());
+      if (project.getDescription() != null) p.setDescription(project.getDescription());
+      if (project.getUrl() != null) p.setUrl(project.getUrl());
 
-      if((project.getTags() != null) && !project.getTags().isEmpty()){
+      if ((project.getTags() != null) && !project.getTags().isEmpty()) {
         List<Tag> tags = this.tagsService.findAll();
-        tags.forEach(p.getTags()::remove);
+//        tags.forEach(p.getTags()::remove);
 
-        for (String tn : project.getTags())
+        for (String tn : project.getTags()) {
+          boolean tagExist = false;
           for (Tag t : tags) {
-            if (t.getTagName().equals(tn))
+            if (t.getTagName().equals(tn)) {
               p.getTags().add(t);
+              tagExist = true;
+              break;
+            }
           }
+          if (!tagExist) throw new BadRequestRuntimeException("Tag " + tn + " inexistente");
+        }
       }
-//      if (project.getTags().isEmpty()) throw new BadRequestRuntimeException("Tag inexistente");
-      if(file != null){
+
+      if (file != null) {
         if (!allowedMimeTypes.contains(file.getContentType()))
           throw new BadRequestRuntimeException("Tipo de arquivo não suportado. Use arquivos .JPG ou .PNG");
         ImgurResponse imgurResponse = this.imageUploadService.uploadImage(file);
@@ -116,8 +122,8 @@ public class ProjectsService {
       if (!(p.getAuthor().getId().equals(userId)))
         throw new ForbiddenRuntimeException("Você não tem autorização para deletar projeto de outro usuário!");
 
-    this.projectsRepository.deleteById(id);
-    return "Projeto deletado com sucesso";
+      this.projectsRepository.deleteById(id);
+      return "Projeto deletado com sucesso";
     }).orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado!"));
 
   }
