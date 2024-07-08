@@ -1,5 +1,7 @@
 package com.orange.porfolio.orange.portfolio.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateTagDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.TagDTO;
 import com.orange.porfolio.orange.portfolio.entities.Tag;
@@ -10,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tags")
@@ -41,7 +45,12 @@ public class TagsController {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasAuthority('admin')")
-  public ResponseEntity<String> update(@PathVariable int id,@RequestBody @Valid CreateTagDTO updateTagDTO){
-    return ResponseEntity.ok(this.tagsService.update(id, updateTagDTO));
+  public ResponseEntity<String> update(@PathVariable int id,@RequestBody @Valid CreateTagDTO updateTagDTO) throws JsonProcessingException {
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> res = new HashMap<>();
+
+    res.put("message", this.tagsService.update(id, updateTagDTO));
+    String json = mapper.writeValueAsString(res);
+    return ResponseEntity.ok(json);
   }
 }

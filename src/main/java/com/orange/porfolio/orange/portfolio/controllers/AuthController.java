@@ -1,5 +1,7 @@
 package com.orange.porfolio.orange.portfolio.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orange.porfolio.orange.portfolio.DTOs.CreateUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.LoginUserDTO;
 import com.orange.porfolio.orange.portfolio.DTOs.UserDTO;
@@ -8,6 +10,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,24 +18,39 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
   private final AuthService authService;
+  @Value("${api.security.token.expiration-hours}")
+  private String jwtExpirationHours;
 
   public AuthController(AuthService authService) {
     this.authService = authService;
   }
 
   @PostMapping("/login")
-  public ResponseEntity<String> login(@RequestBody @Valid LoginUserDTO loginUserDTO, HttpServletResponse httpServletResponse) {
+  public ResponseEntity<String> login(@RequestBody @Valid LoginUserDTO loginUserDTO, HttpServletResponse httpServletResponse) throws JsonProcessingException {
     Cookie cookie = new Cookie("token", authService.login(loginUserDTO));
     cookie.setHttpOnly(true);
     cookie.setPath("/");
     cookie.setSecure(true);
+    cookie.setMaxAge(60 * 60 * Integer.parseInt(jwtExpirationHours));
+    cookie.setAttribute("SameSite", "None");
+
     httpServletResponse.addCookie(cookie);
-    return ResponseEntity.ok("Usuário logado com sucesso!");
+    httpServletResponse.setHeader("Access-Control-Allow-Credentials", "true");
+
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, String> res = new HashMap<>();
+    res.put("message", "Usuário logado com sucesso!");
+    String json = mapper.writeValueAsString(res);
+
+    return ResponseEntity.ok(json);
   }
 
   @PostMapping("/register")
@@ -43,13 +61,23 @@ public class AuthController {
   }
 
   @GetMapping("/login/google")
-  public ResponseEntity<String> loginGoole(Authentication authentication, HttpServletResponse response){
+  public ResponseEntity<String> loginGoole(Authentication authentication, HttpServletResponse httpServletResponse) throws JsonProcessingException {
     OAuth2AuthenticationToken oAuth2AuthenticationToken = (OAuth2AuthenticationToken) authentication;
+
     Cookie cookie = new Cookie("token", authService.loginWithGoogle(oAuth2AuthenticationToken));
     cookie.setHttpOnly(true);
     cookie.setPath("/");
     cookie.setSecure(true);
-    response.addCookie(cookie);
-    return ResponseEntity.ok("Usuário logado com sucesso!");
+    cookie.setAttribute("SameSite", "None");
+
+    httpServletResponse.addCookie(cookie);
+    httpServletResponse.setHeader("Access-Control-Allow-Credentials", "true");
+
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, String> res = new HashMap<>();
+    res.put("message", "Usuário logado com sucesso!");
+    String json = mapper.writeValueAsString(res);
+
+    return ResponseEntity.ok(json);
   }
 }
