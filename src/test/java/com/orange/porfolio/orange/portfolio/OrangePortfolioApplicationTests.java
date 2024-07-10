@@ -120,7 +120,7 @@ class OrangePortfolioApplicationTests {
   @Test
   @DisplayName("Should login an user")
   @Order(2)
-  void login() {
+  void login() throws JsonProcessingException {
     LoginUserDTO loginUserDTO = mocksObjects.mockLoginUserDTO;
     String url = mocksObjects.mockUrl + port + "/auth/login";
 
@@ -130,19 +130,24 @@ class OrangePortfolioApplicationTests {
     assert cookies != null;
     cookies = cookies.stream().filter(c -> c.startsWith("token=")).toList();
 
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, String> res = new HashMap<>();
+    res.put("message", "Usuário logado com sucesso!");
+    String json = mapper.writeValueAsString(res);
+
     assertEquals(1, cookies.size());
     this.userToken = cookies.getFirst().substring(6);
 
     assertNotNull(response);
     assertNotNull(this.userToken);
-    assertEquals("Usuário logado com sucesso!", response.getBody());
+    assertEquals(json, response.getBody());
     assertEquals("200 OK", response.getStatusCode().toString());
   }
 
   @Test
   @DisplayName("Should login an user as Admin")
   @Order(2)
-  void loginAsAdmin() {
+  void loginAsAdmin() throws JsonProcessingException {
     String url = mocksObjects.mockUrl + port + "/auth/login";
     LoginUserDTO loginAdminDTO = new LoginUserDTO("admin@admin.com", "12345678Aa!");
     ResponseEntity<String> response = testRestTemplate.postForEntity(url, loginAdminDTO, String.class);
@@ -151,12 +156,17 @@ class OrangePortfolioApplicationTests {
     assert cookies != null;
     cookies = cookies.stream().filter(c -> c.startsWith("token=")).toList();
 
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, String> res = new HashMap<>();
+    res.put("message", "Usuário logado com sucesso!");
+    String json = mapper.writeValueAsString(res);
+
     assertEquals(1, cookies.size());
     this.adminToken = cookies.getFirst().substring(6);
 
     assertNotNull(response);
     assertNotNull(this.adminToken);
-    assertEquals("Usuário logado com sucesso!", response.getBody());
+    assertEquals(json, response.getBody());
     assertEquals("200 OK", response.getStatusCode().toString());
   }
 
@@ -245,7 +255,7 @@ class OrangePortfolioApplicationTests {
   @Test
   @DisplayName("Should update a Tag logged as admin")
   @Order(4)
-  void updateTagAsAdmin() {
+  void updateTagAsAdmin() throws JsonProcessingException {
     String url = mocksObjects.mockUrl + port + "/tags/" + 2;
 
     HttpHeaders headersWithCookies = new HttpHeaders();
@@ -257,12 +267,18 @@ class OrangePortfolioApplicationTests {
     HttpEntity<CreateTagDTO> entityWithCookies2 = new HttpEntity<>(updateDataTag, headersWithCookies);
     List<Tag> tags = tagsRepository.findAll();
 
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> res = new HashMap<>();
+
+    res.put("message", "Tag atualizada com sucesso!");
+    String json = mapper.writeValueAsString(res);
+
     ResponseEntity<String> response = testRestTemplate.exchange(url, HttpMethod.PUT, entityWithCookies2, String.class);
 
     Tag updatedTag = tagsRepository.findAll().stream().filter(tag -> Objects.equals(tag.getId(), 2)).toList().getFirst();
 
     assertEquals("200 OK", response.getStatusCode().toString());
-    assertEquals("Tag atualizada com sucesso!", Objects.requireNonNull(response.getBody()));
+    assertEquals(json, Objects.requireNonNull(response.getBody()));
     assertEquals(updateDataTag.getTagName(), updatedTag.getTagName());
   }
 

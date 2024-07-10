@@ -27,7 +27,7 @@ import java.util.Map;
 public class AuthController {
   private final AuthService authService;
   @Value("${api.security.token.expiration-hours}")
-  private String jwtExpirationHours;
+  private String jwtExpirationHours = "2";
 
   public AuthController(AuthService authService) {
     this.authService = authService;
