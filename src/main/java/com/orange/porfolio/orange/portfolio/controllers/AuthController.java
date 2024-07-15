@@ -80,4 +80,25 @@ public class AuthController {
 
     return ResponseEntity.ok(json);
   }
+
+
+  @PostMapping("/logout")
+  public ResponseEntity<String> logout(HttpServletResponse httpServletResponse) throws JsonProcessingException {
+    Cookie cookie = new Cookie("token", "");
+    cookie.setHttpOnly(true);
+    cookie.setPath("/");
+    cookie.setSecure(true);
+    cookie.setMaxAge(0);
+    cookie.setAttribute("SameSite", "None");
+
+    httpServletResponse.addCookie(cookie);
+    httpServletResponse.setHeader("Access-Control-Allow-Credentials", "true");
+
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, String> res = new HashMap<>();
+    res.put("message", "Logout realizado com sucesso!");
+    String json = mapper.writeValueAsString(res);
+
+    return ResponseEntity.ok(json);
+  }
 }
