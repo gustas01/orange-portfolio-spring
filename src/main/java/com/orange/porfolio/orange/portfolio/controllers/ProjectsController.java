@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.UUID;
 
 @RestController
@@ -25,7 +26,7 @@ public class ProjectsController {
   private final HttpServletRequest request;
 
   public ProjectsController(ProjectsService projectsService, TokenService tokenService,
-                            HttpServletRequest request){
+                            HttpServletRequest request) {
     this.projectsService = projectsService;
     this.tokenService = tokenService;
     this.request = request;
@@ -34,7 +35,7 @@ public class ProjectsController {
   @GetMapping("/discovery")
   public ResponseEntity<Page<Project>> discovery(
           @RequestParam(value = "page", defaultValue = "0") Integer page,
-          @RequestParam(value = "size", defaultValue = "10") Integer size){
+          @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
     Pageable pageable = PageRequest.of(page, size);
     String token = this.tokenService.recoverToken(request);
@@ -42,7 +43,7 @@ public class ProjectsController {
 
     Page<Project> projects = this.projectsService.discovery(userId, pageable);
 
-    return ResponseEntity.ok(projects) ;
+    return ResponseEntity.ok(projects);
   }
 
   @GetMapping("/{id}")
@@ -50,18 +51,27 @@ public class ProjectsController {
     return ResponseEntity.ok(this.projectsService.findOne(id));
   }
 
+  @GetMapping("/me/data")
+  public ResponseEntity<Page<Project>> findAllByAuthor(@RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                 @RequestParam(value = "size", defaultValue = "10") Integer size) {
+    String token = this.tokenService.recoverToken(request);
+    UUID userId = UUID.fromString(this.tokenService.validateToken(token));
+    Pageable pageable = PageRequest.of(page, size);
+    return ResponseEntity.ok(this.projectsService.findAllByAuthor(userId, pageable));
+  }
+
   @PostMapping
   public ResponseEntity<ProjectDTO> create(@RequestPart("data") @Valid CreateProjectDTO createProjectDTO,
-                                           @RequestPart (value = "image", required = false) MultipartFile file) {
+                                           @RequestPart(value = "image", required = false) MultipartFile file) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
 
-    return new ResponseEntity<>(this.projectsService.create(userId, createProjectDTO, file),HttpStatus.CREATED);
+    return new ResponseEntity<>(this.projectsService.create(userId, createProjectDTO, file), HttpStatus.CREATED);
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<ProjectDTO> update(@PathVariable UUID id, @RequestPart("data") @Valid UpdateProjectDTO updateProjectDTO,
-                                           @RequestPart (value = "image", required = false) MultipartFile file) {
+                                           @RequestPart(value = "image", required = false) MultipartFile file) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
     return ResponseEntity.ok(this.projectsService.update(userId, id, updateProjectDTO, file));
@@ -71,6 +81,6 @@ public class ProjectsController {
   public ResponseEntity<String> delete(@PathVariable UUID id) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));
-    return new ResponseEntity<>(this.projectsService.delete(userId, id), HttpStatus.NO_CONTENT) ;
+    return new ResponseEntity<>(this.projectsService.delete(userId, id), HttpStatus.NO_CONTENT);
   }
 }

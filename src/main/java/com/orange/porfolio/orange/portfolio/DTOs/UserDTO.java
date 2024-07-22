@@ -1,7 +1,5 @@
 package com.orange.porfolio.orange.portfolio.DTOs;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.orange.porfolio.orange.portfolio.entities.Project;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,5 +18,5 @@ public class UserDTO {
   private String lastName;
   private String email;
   private String avatarUrl;
-  private List<ProjectDTO> projects = new ArrayList<>();
+//  private List<ProjectDTO> projects = new ArrayList<>();
 }

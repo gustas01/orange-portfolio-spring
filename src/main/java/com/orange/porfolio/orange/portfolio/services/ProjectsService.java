@@ -75,7 +75,6 @@ public class ProjectsService {
     return project.get();
   }
 
-  //chamar lá no userController
   public Page<Project> findAllByAuthor(UUID userId, Pageable pageable) {
     return this.projectsRepository.findAllByAuthorId(userId, pageable);
   }
