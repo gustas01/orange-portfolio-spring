@@ -16,7 +16,7 @@ public class TestUtilsMocks {
   public CreateUserDTO mockCreateUserDTO = new CreateUserDTO("gustavo", "lima", "gustavo@email.com", "12345678Aa!");
   public UpdateUserDTO mockUpdateUserDTO = new UpdateUserDTO("gustavo", "lima", "gustavo@email.com", "12345678Aa!");
   public User mockUser = new User(UUID.fromString("1a5b6e9f-a52c-44a8-9a9a-0d609065ca25"), "gustavo", "lima", "gustavo@email.com", "12345678Aa!", "", List.of(), new HashSet<>(), false);
-  public UserDTO mockUserDTO = new UserDTO( "gustavo", "lima", "gustavo@email.com", "http://www.meuavatar.com", List.of());
+  public UserDTO mockUserDTO = new UserDTO( "gustavo", "lima", "gustavo@email.com", "http://www.meuavatar.com");
   public Role mockRoleUser = new Role("user");
   public ImgurResponse mockImgurResponse = new ImgurResponse(new ImgurResponse.Data("http://uploadSuccess.com"));
   public MockMultipartFile mockMultipartFileImage = new MockMultipartFile("avatarImage", "myAvatar", "image/jpeg", new byte[] { 1 });

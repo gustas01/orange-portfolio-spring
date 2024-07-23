@@ -124,7 +124,6 @@ class AuthServiceTest {
     assertEquals(response.getLastName(), mockUser.getLastName());
     assertEquals(response.getEmail(), mockUser.getEmail());
     assertEquals(mockUser.getAvatarUrl(), mockImgurResponse.getData().getLink());
-    assertEquals(response.getProjects(), mockUser.getProjects());
 
     verify(usersRepository, times(1)).findByEmail(mockCreateUserDTO.getEmail());
     verify(roleRepository, times(1)).findByName(mockRoleUser.getName());
@@ -186,7 +185,6 @@ class AuthServiceTest {
     assertEquals(response.getLastName(), mockUser.getLastName());
     assertEquals(response.getEmail(), mockUser.getEmail());
     assertEquals(mockUser.getAvatarUrl(), "");
-    assertEquals(response.getProjects(), mockUser.getProjects());
 
     verify(usersRepository, times(1)).findByEmail(mockCreateUserDTO.getEmail());
     verify(roleRepository, times(1)).findByName(mockRoleUser.getName());

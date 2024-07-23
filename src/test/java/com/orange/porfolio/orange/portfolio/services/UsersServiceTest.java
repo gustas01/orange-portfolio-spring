@@ -58,7 +58,6 @@ class UsersServiceTest {
 
     assertEquals(response.getFirstName(), mockUser.getFirstName());
     assertEquals(response.getLastName(), mockUser.getLastName());
-    assertEquals(response.getProjects(), mockUser.getProjects());
     assertEquals(response.getEmail(), mockUser.getEmail());
     assertEquals(response.getAvatarUrl(), mockUser.getAvatarUrl());
     verify(usersRepository, times(1)).findById(mockUser.getId());
@@ -127,7 +126,6 @@ class UsersServiceTest {
     assertEquals(response.getLastName(), mockUser.getLastName());
     assertEquals(response.getEmail(), mockUser.getEmail());
     assertEquals(response.getAvatarUrl(), mockUser.getAvatarUrl());
-    assertEquals(response.getProjects(), mockUser.getProjects());
 
     verify(usersRepository, times(1)).findById(mockUser.getId());
     verify(imageUploadService, times(1)).uploadImage(mockMultipartFileImage);
@@ -150,7 +148,6 @@ class UsersServiceTest {
     assertEquals(response.getLastName(), mockUser.getLastName());
     assertEquals(response.getEmail(), mockUser.getEmail());
     assertEquals(response.getAvatarUrl(), "");
-    assertEquals(response.getProjects(), mockUser.getProjects());
 
     verify(usersRepository, times(1)).findById(mockUser.getId());
     verify(usersRepository, times(1)).save(mockUser);
