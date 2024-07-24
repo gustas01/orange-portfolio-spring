@@ -52,7 +52,7 @@ public class ProjectsController {
   }
 
   @GetMapping("/me/data")
-  public ResponseEntity<Page<Project>> findAllByAuthor(@RequestParam(value = "page", defaultValue = "0") Integer page,
+  public ResponseEntity<Page<ProjectDTO>> findAllByAuthor(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                                  @RequestParam(value = "size", defaultValue = "10") Integer size) {
     String token = this.tokenService.recoverToken(request);
     UUID userId = UUID.fromString(this.tokenService.validateToken(token));

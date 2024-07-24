@@ -15,11 +15,14 @@ import com.orange.porfolio.orange.portfolio.repositories.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectsService {
@@ -75,8 +78,12 @@ public class ProjectsService {
     return project.get();
   }
 
-  public Page<Project> findAllByAuthor(UUID userId, Pageable pageable) {
-    return this.projectsRepository.findAllByAuthorId(userId, pageable);
+  public Page<ProjectDTO> findAllByAuthor(UUID userId, Pageable pageable) {
+    Page<Project> projects = this.projectsRepository.findAllByAuthorId(userId, pageable);
+    List<ProjectDTO> projectDTOS = projects.stream().map(p ->
+                    mapper.map(p, ProjectDTO.class)).toList();
+
+    return new PageImpl<ProjectDTO>(projectDTOS, projects.getPageable(), projects.getTotalElements());
   }
 
   public ProjectDTO update(UUID userId, UUID id, UpdateProjectDTO project, MultipartFile file) {

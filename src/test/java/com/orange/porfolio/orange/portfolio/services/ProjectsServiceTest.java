@@ -197,6 +197,27 @@ class ProjectsServiceTest {
   }
 
   @Test
+  @DisplayName("Should return a paginated list of projects")
+  void findAllByAuthor() {
+    User mockUser = mocksObjects.mockUser;
+    Project mockProject = mocksObjects.mockProject;
+    ProjectDTO mockProjectDTO = mocksObjects.mockProjectDTO;
+
+    Pageable pageable = PageRequest.of(0, 10);
+
+    when(projectsRepository.findAllByAuthorId(mockUser.getId(), pageable)).thenReturn(new PageImpl<>(List.of(mockProject), pageable, 1));
+    when(mapper.map(mockProject, ProjectDTO.class)).thenReturn(mockProjectDTO);
+    Page<ProjectDTO> projects = projectsService.findAllByAuthor(mockUser.getId(), pageable);
+
+    assertNotNull(projects);
+    assertNotNull(projects.getContent());
+    assertEquals(projects.getNumberOfElements(), 1);
+
+    verify(projectsRepository, times(1)).findAllByAuthorId(mockUser.getId(), pageable);
+    assertEquals(projects.getContent(), List.of(mockProjectDTO) );
+  }
+
+  @Test
   @DisplayName("Should return one project by Id")
   void findOneSuccess() {
     Project mockProject = mocksObjects.mockProject;

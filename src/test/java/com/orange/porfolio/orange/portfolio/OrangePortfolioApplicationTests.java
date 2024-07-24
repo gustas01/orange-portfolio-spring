@@ -456,7 +456,7 @@ class OrangePortfolioApplicationTests {
 
 
   @Test
-  @DisplayName("Should list the project that aren't from the logged user")
+  @DisplayName("Should list the projects that aren't from the logged user")
   @Order(4)
   void discoveryProjects() {
 
@@ -478,7 +478,32 @@ class OrangePortfolioApplicationTests {
     assertEquals(1, response.getBody().getTotalPages());
     assertEquals("UNSORTED", response.getBody().getSort().toString());
     assertEquals(PageRequest.class, response.getBody().getPageable().getClass());
+  }
 
+
+  @Test
+  @DisplayName("Should list the projects from the logged user")
+  @Order(4)
+  void findAllByAuthorProjects() {
+
+    String url = mocksObjects.mockUrl + port + "/projects/me/data";
+
+    HttpHeaders headersWithCookies = new HttpHeaders();
+    headersWithCookies.set(HttpHeaders.COOKIE, "token=" + adminToken);
+    headersWithCookies.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headersWithCookies);
+
+    ResponseEntity<CustomPageImpl<Project>> response = testRestTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<CustomPageImpl<Project>>() {
+    });
+
+    assertNotNull(response.getBody());
+    assertEquals("200 OK", response.getStatusCode().toString());
+    assertEquals(0, response.getBody().get().count());
+    assertEquals(0, response.getBody().getTotalElements());
+    assertEquals(0, response.getBody().getTotalPages());
+    assertEquals("UNSORTED", response.getBody().getSort().toString());
+    assertEquals(PageRequest.class, response.getBody().getPageable().getClass());
   }
 
 
