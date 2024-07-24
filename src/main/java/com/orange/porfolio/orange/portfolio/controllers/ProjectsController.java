@@ -51,11 +51,11 @@ public class ProjectsController {
     return ResponseEntity.ok(this.projectsService.findOne(id));
   }
 
-  @GetMapping("/me/data")
-  public ResponseEntity<Page<ProjectDTO>> findAllByAuthor(@RequestParam(value = "page", defaultValue = "0") Integer page,
+  @GetMapping("/data")
+  public ResponseEntity<Page<ProjectDTO>> findAllByAuthor(@RequestParam(value = "id", required = false) UUID id, @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                  @RequestParam(value = "size", defaultValue = "10") Integer size) {
     String token = this.tokenService.recoverToken(request);
-    UUID userId = UUID.fromString(this.tokenService.validateToken(token));
+    UUID userId = id == null ? UUID.fromString(this.tokenService.validateToken(token)) : id;
     Pageable pageable = PageRequest.of(page, size);
     return ResponseEntity.ok(this.projectsService.findAllByAuthor(userId, pageable));
   }

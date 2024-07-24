@@ -486,7 +486,7 @@ class OrangePortfolioApplicationTests {
   @Order(4)
   void findAllByAuthorProjects() {
 
-    String url = mocksObjects.mockUrl + port + "/projects/me/data";
+    String url = mocksObjects.mockUrl + port + "/projects/data";
 
     HttpHeaders headersWithCookies = new HttpHeaders();
     headersWithCookies.set(HttpHeaders.COOKIE, "token=" + adminToken);
