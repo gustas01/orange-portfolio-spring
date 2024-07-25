@@ -96,7 +96,7 @@ public class ProjectsService {
 
       if ((project.getTags() != null) && !project.getTags().isEmpty()) {
         List<Tag> tags = this.tagsService.findAll();
-//        tags.forEach(p.getTags()::remove);
+        tags.forEach(p.getTags()::remove);
 
         for (String tn : project.getTags()) {
           boolean tagExist = false;
