@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,8 @@ public class AuthController {
   private final AuthService authService;
   @Value("${api.security.token.expiration-hours}")
   private String jwtExpirationHours = "2";
+  @Value("${client.redirect.url}")
+  private String clientUrl;
 
   public AuthController(AuthService authService) {
     this.authService = authService;
@@ -61,7 +64,7 @@ public class AuthController {
   }
 
   @GetMapping("/login/google")
-  public ResponseEntity<String> loginGoole(Authentication authentication, HttpServletResponse httpServletResponse) throws JsonProcessingException {
+  public ResponseEntity<String> loginGoole(Authentication authentication, HttpServletResponse httpServletResponse) throws IOException {
     OAuth2AuthenticationToken oAuth2AuthenticationToken = (OAuth2AuthenticationToken) authentication;
 
     Cookie cookie = new Cookie("token", authService.loginWithGoogle(oAuth2AuthenticationToken));
@@ -77,6 +80,8 @@ public class AuthController {
     Map<String, String> res = new HashMap<>();
     res.put("message", "Usuário logado com sucesso!");
     String json = mapper.writeValueAsString(res);
+
+    httpServletResponse.sendRedirect(clientUrl);
 
     return ResponseEntity.ok(json);
   }

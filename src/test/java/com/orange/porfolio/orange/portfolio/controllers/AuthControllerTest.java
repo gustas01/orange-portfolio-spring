@@ -24,6 +24,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,7 +88,7 @@ class AuthControllerTest {
 
   @Test
   @DisplayName("Should LOGIN WITH GOOGLE and save a JWT Token in COOKIES of the response")
-  void loginGoole() throws JsonProcessingException {
+  void loginGoole() throws IOException {
     String mockToken = mocksObjects.mockToken;
 
     when(authService.loginWithGoogle(oAuth2AuthenticationToken)).thenReturn(mockToken);
